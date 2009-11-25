@@ -223,4 +223,8 @@ public class GuiceApplication extends Application implements Module, InjectorPro
         b.bindListener(Matchers.any(), resourceListener);
         b.bindListener(Matchers.any(), extrasListener);
     }
+
+    public List<StaticTypeListener> getStaticTypeListeners() {
+        return staticTypeListeners;
+    }
 }
