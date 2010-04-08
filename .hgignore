@@ -1,6 +1,7 @@
 syntax: regexp
 \.DS_Store
-^bin/
-^samples/bin/
-^roboguice/target/
+target/
+classes/
+/bin/
 .*.iws$
+local.properties
