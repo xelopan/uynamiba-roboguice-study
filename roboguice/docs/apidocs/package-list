@@ -1,0 +1,7 @@
+roboguice.activity
+roboguice.application
+roboguice.config
+roboguice.inject
+roboguice.service
+roboguice.test
+roboguice.util
