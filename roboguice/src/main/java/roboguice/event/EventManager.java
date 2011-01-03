@@ -1,7 +1,8 @@
 package roboguice.event;
 
 import android.content.Context;
-import com.google.inject.Singleton;
+
+import com.google.inject.Inject;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -22,14 +23,10 @@ import java.util.*;
  * @author Adam Tybor
  * @author John Ericksen
  */
-@Singleton
+@ContextScoped
 public class EventManager {
 
-    protected final Map<Context, Map<Class, Set<ContextObserverReference>>> registrations;
-
-    public EventManager() {
-        registrations = new WeakHashMap<Context, Map<Class, Set<ContextObserverReference>>>();
-    }
+    protected Map<Class<?>, Set<ContextObserverReference>> methods = new HashMap<Class<?>, Set<ContextObserverReference>>();
 
     public boolean isEnabled() {
         return true;
@@ -43,14 +40,8 @@ public class EventManager {
      * @param method
      * @param event
      */
-    public void registerObserver(Context context, Object instance, Method method, Class event) {
+    public void registerObserver(Object instance, Method method, Class event) {
         if (!isEnabled()) return;
-
-        Map<Class, Set<ContextObserverReference>> methods = registrations.get(context);
-        if (methods == null) {
-            methods = new HashMap<Class, Set<ContextObserverReference>>();
-            registrations.put(context, methods);
-        }
 
         Set<ContextObserverReference> observers = methods.get(event);
         if (observers == null) {
@@ -69,9 +60,6 @@ public class EventManager {
      */
     public void unregisterObserver(Context context, Object instance, Class event) {
         if (!isEnabled()) return;
-
-        final Map<Class, Set<ContextObserverReference>> methods = registrations.get(context);
-        if (methods == null) return;
 
         final Set<ContextObserverReference> observers = methods.get(event);
         if (observers == null) return;
@@ -92,13 +80,7 @@ public class EventManager {
      * Clears all observers of the given context.
      * @param context
      */
-    public void clear(Context context) {
-        if (!isEnabled()) return;
-
-        final Map<Class, Set<ContextObserverReference>> methods = registrations.get(context);
-        if (methods == null) return;
-
-        registrations.remove(context);
+    public void clear() {
         methods.clear();
     }
 
@@ -109,11 +91,8 @@ public class EventManager {
      * @param context
      * @param event
      */
-    public void notify(Context context, Object event) {
+    public void notify(Object event) {
         if (!isEnabled()) return;
-
-        final Map<Class, Set<ContextObserverReference>> methods = registrations.get(context);
-        if (methods == null) return;
 
         for(Class subClassLoop = event.getClass(); subClassLoop != null; subClassLoop = subClassLoop.getSuperclass()){
             //register class and all super classes, for inheritance based event handling.
@@ -141,11 +120,8 @@ public class EventManager {
      * @param context
      * @param event
      */
-    public void notifyWithResult(Context context, Object event, EventResultHandler resultHandler) {
+    public void notifyWithResult(Object event, EventResultHandler resultHandler) {
         if (!isEnabled()) return;
-
-        final Map<Class, Set<ContextObserverReference>> methods = registrations.get(context);
-        if (methods == null) return;
 
         final Set<ContextObserverReference> observers = methods.get(event.getClass());
         if (observers == null) return;

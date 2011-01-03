@@ -15,6 +15,19 @@
  */
 package roboguice.astroboy.activity;
 
+import roboguice.activity.RoboActivity;
+import roboguice.activity.event.OnDestroyEvent;
+import roboguice.activity.event.OnKeyDownEvent;
+import roboguice.astroboy.AstroboyModule;
+import roboguice.astroboy.R;
+import roboguice.astroboy.bean.*;
+import roboguice.astroboy.service.BooleanResultHandler;
+import roboguice.astroboy.service.ContextObservingClassEventService;
+import roboguice.astroboy.service.TalkingThing;
+import roboguice.inject.*;
+import roboguice.util.Ln;
+import roboguice.util.RoboAsyncTask;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -23,18 +36,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
+
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.internal.Nullable;
-import roboguice.activity.RoboActivity;
-import roboguice.astroboy.AstroboyModule;
-import roboguice.astroboy.R;
-import roboguice.astroboy.bean.*;
-import roboguice.astroboy.service.*;
-import roboguice.inject.ExtrasListener;
-import roboguice.inject.InjectExtra;
-import roboguice.inject.InjectResource;
-import roboguice.inject.InjectView;
 
 import java.util.Date;
 
@@ -43,8 +48,6 @@ import static junit.framework.Assert.assertNull;
 
 public class DoctorTenma extends RoboActivity {
     @Inject ContextObservingService mContextObservingService;
-    @Inject ExtendedContextObservingService contextObservingClassEventService;
-    @Inject HybridObservingService hybridObservingService;
 
     // You can inject arbitrary View, String, and other types of resources.
     // See ResourceListener for details.
@@ -163,7 +166,7 @@ public class DoctorTenma extends RoboActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        BooleanResultHandler booleanReturnHandler = new BooleanResultHandler();
+        final BooleanResultHandler booleanReturnHandler = new BooleanResultHandler();
 
         eventManager.notifyWithResult(this, roboActivityEventFactory.buildOnKeyDownEvent(keyCode, event), booleanReturnHandler);
 
