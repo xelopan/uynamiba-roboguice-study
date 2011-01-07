@@ -16,29 +16,25 @@
 package roboguice.astroboy.activity;
 
 import roboguice.activity.RoboActivity;
-import roboguice.activity.event.OnDestroyEvent;
-import roboguice.activity.event.OnKeyDownEvent;
 import roboguice.astroboy.AstroboyModule;
 import roboguice.astroboy.R;
 import roboguice.astroboy.bean.*;
-import roboguice.astroboy.service.BooleanResultHandler;
-import roboguice.astroboy.service.ContextObservingClassEventService;
+import roboguice.astroboy.service.ContextObservingService;
 import roboguice.astroboy.service.TalkingThing;
-import roboguice.inject.*;
-import roboguice.util.Ln;
-import roboguice.util.RoboAsyncTask;
+import roboguice.inject.ExtrasListener;
+import roboguice.inject.InjectExtra;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.internal.Nullable;
 
 import java.util.Date;
@@ -47,7 +43,13 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
 public class DoctorTenma extends RoboActivity {
-    @Inject protected ContextObservingClassEventService mContextObservingService;
+
+    /**
+     * You can inject arbitrary objects that watch for events that occur
+     * in this activity and synchronously perform actions based on
+     * those events
+     */
+    @Inject ContextObservingService mContextObservingService;
 
     // You can inject arbitrary View, String, and other types of resources.
     // See ResourceListener for details.
@@ -131,9 +133,6 @@ public class DoctorTenma extends RoboActivity {
     @Inject
     protected TalkingThing      talker;
 
-    @Inject
-    protected Provider<RoboAsyncTaskBackgroundJunk> backgroundJunkProvider;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,22 +158,5 @@ public class DoctorTenma extends RoboActivity {
 
         Log.d("DoctorTenma", talker.talk());
 
-        backgroundJunkProvider.get().execute();
-
-
     }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        final BooleanResultHandler booleanReturnHandler = new BooleanResultHandler();
-
-        eventManager.notifyWithResult(new OnKeyDownEvent(keyCode, event), booleanReturnHandler);
-
-        if(booleanReturnHandler.isSuccess()){
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-
 }
