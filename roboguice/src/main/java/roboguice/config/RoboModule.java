@@ -1,5 +1,12 @@
 package roboguice.config;
 
+import roboguice.event.EventManager;
+import roboguice.event.ObserverTypeListener;
+import roboguice.inject.*;
+import roboguice.util.Ln;
+import roboguice.util.RoboAsyncTask;
+import roboguice.util.RoboThread;
+
 import android.app.*;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -15,14 +22,11 @@ import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.matcher.Matchers;
-import roboguice.inject.*;
-import roboguice.util.Ln;
-import roboguice.util.RoboAsyncTask;
-import roboguice.util.RoboThread;
 
 import java.util.List;
 
@@ -35,18 +39,19 @@ import java.util.List;
  */
 public class RoboModule extends AbstractModule {
 
-    protected final ContextScope contextScope;
-    protected final Provider<Context> throwingContextProvider;
-    protected final Provider<Context> contextProvider;
-    protected final ResourceListener resourceListener;
-    protected final ViewListener viewListener;
-    protected final ExtrasListener extrasListener;
-    protected final PreferenceListener preferenceListener;
-    protected final Application application;
+    protected ContextScope contextScope;
+    protected Provider<Context> throwingContextProvider;
+    protected Provider<Context> contextProvider;
+    protected ResourceListener resourceListener;
+    protected ViewListener viewListener;
+    protected ExtrasListener extrasListener;
+    protected PreferenceListener preferenceListener;
+    protected Application application;
+    protected EventManager observationManager;
 
     public RoboModule(ContextScope contextScope, Provider<Context> throwingContextProvider, Provider<Context> contextProvider,
             ResourceListener resourceListener, ViewListener viewListener, ExtrasListener extrasListener,
-            PreferenceListener preferenceListener, Application application) {
+            PreferenceListener preferenceListener, EventManager observationManager, Application application) {
         this.contextScope = contextScope;
         this.throwingContextProvider = throwingContextProvider;
         this.contextProvider = contextProvider;
@@ -54,6 +59,7 @@ public class RoboModule extends AbstractModule {
         this.viewListener = viewListener;
         this.extrasListener = extrasListener;
         this.preferenceListener = preferenceListener;
+        this.observationManager = observationManager;
         this.application = application;
     }
 
@@ -80,9 +86,12 @@ public class RoboModule extends AbstractModule {
         bind(Resources.class).toProvider(ResourcesProvider.class);
         bind(ContentResolver.class).toProvider(ContentResolverProvider.class);
 
-        for (Class<? extends Object> c = application.getClass(); c != null && Application.class.isAssignableFrom(c); c = c.getSuperclass()) {
+        // Context observers
+        bind(EventManager.class).toInstance(observationManager);
+
+        for (Class<?> c = application.getClass(); c != null && Application.class.isAssignableFrom(c); c = c.getSuperclass())
             bind((Class<Object>) c).toInstance(application);
-        }
+
 
         // System Services
         bind(LocationManager.class).toProvider(new SystemServiceProvider<LocationManager>(Context.LOCATION_SERVICE));
@@ -106,9 +115,11 @@ public class RoboModule extends AbstractModule {
         bindListener(Matchers.any(), extrasListener);
         bindListener(Matchers.any(), viewListener);
 
-        if (preferenceListener != null) {
+        if (preferenceListener != null)
           bindListener(Matchers.any(), preferenceListener);
-        }
+
+        if (observationManager.isEnabled())
+            bindListener(Matchers.any(), new ObserverTypeListener(contextProvider,observationManager));
 
         requestStaticInjection( Ln.class );
         requestStaticInjection( RoboThread.class );
