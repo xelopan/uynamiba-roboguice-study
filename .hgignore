@@ -1,0 +1,10 @@
+syntax: regexp
+\.DS_Store
+target/
+classes/
+/bin/
+.*.iws$
+local.properties
+.idea/
+.*.ipr$
+.*.iml$
