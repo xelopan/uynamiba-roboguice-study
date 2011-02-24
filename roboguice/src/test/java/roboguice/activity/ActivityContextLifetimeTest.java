@@ -1,14 +1,16 @@
 package roboguice.activity;
 
-import android.content.Context;
-import com.google.inject.Injector;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import roboguice.inject.InjectorProvider;
+import roboguice.RoboGuice;
 
-import static junit.framework.Assert.*;
+import android.content.Context;
+
+import com.google.inject.Injector;
+
+import static junit.framework.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 public class ActivityContextLifetimeTest {
@@ -57,6 +59,6 @@ public class ActivityContextLifetimeTest {
     }
 
     protected Injector getInjector() {
-        return ((InjectorProvider) Robolectric.application).getInjector();
+        return RoboGuice.getInjector(Robolectric.application);
     }
 }
