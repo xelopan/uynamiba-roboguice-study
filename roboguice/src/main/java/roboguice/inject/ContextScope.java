@@ -50,10 +50,10 @@ package roboguice.inject;
  * From http://code.google.com/p/google-guice/wiki/CustomScopes
  */
 
-import roboguice.application.RoboApplication;
 import roboguice.util.Ln;
 import roboguice.util.Strings;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.google.inject.Key;
@@ -76,7 +76,7 @@ public class ContextScope implements Scope {
     protected ArrayList<ViewMembersInjector<?>> viewsForInjection = new ArrayList<ViewMembersInjector<?>>();
     protected ArrayList<PreferenceMembersInjector<?>> preferencesForInjection = new ArrayList<PreferenceMembersInjector<?>>();
 
-    public ContextScope(RoboApplication app) {
+    public ContextScope(Application app) {
         enter(app);
     }
 
@@ -135,8 +135,7 @@ public class ContextScope implements Scope {
             public T get() {
                 Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);
 
-                @SuppressWarnings("unchecked")
-                T current = (T) scopedObjects.get(key);
+                @SuppressWarnings({"unchecked"}) T current = (T) scopedObjects.get(key);
                 if (current == null && !scopedObjects.containsKey(key)) {
                     current = unscoped.get();
                     scopedObjects.put(key, current);
