@@ -15,11 +15,10 @@
  */
 package roboguice.activity;
 
+import roboguice.RoboGuice;
 import roboguice.activity.event.*;
-import roboguice.application.RoboApplication;
 import roboguice.event.EventManager;
 import roboguice.inject.ContextScope;
-import roboguice.inject.InjectorProvider;
 
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -44,14 +43,14 @@ import com.google.inject.Injector;
  * @author Rodrigo Damazio
  * @author Mike Burton
  */
-public abstract class RoboPreferenceActivity extends PreferenceActivity implements InjectorProvider {
+public abstract class RoboPreferenceActivity extends PreferenceActivity {
     protected EventManager eventManager;
     protected ContextScope scope;
 
     /** {@inheritDoc } */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = getInjector();
+        final Injector injector = RoboGuice.getInjector(getApplication());
         eventManager = injector.getInstance(EventManager.class);
         scope = injector.getInstance(ContextScope.class);
         scope.enter(this);
@@ -174,11 +173,4 @@ public abstract class RoboPreferenceActivity extends PreferenceActivity implemen
         }
     }
 
-    /**
-     * @see roboguice.application.RoboApplication#getInjector()
-     */
-    @Override
-    public Injector getInjector() {
-        return ((RoboApplication) getApplication()).getInjector();
-    }
 }
