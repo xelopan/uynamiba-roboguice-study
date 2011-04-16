@@ -20,7 +20,6 @@ import android.content.Context;
 import android.preference.PreferenceActivity;
 
 import com.google.inject.MembersInjector;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
@@ -34,13 +33,11 @@ import static com.google.inject.internal.util.$Preconditions.checkNotNull;
  * @author Mike Burton
  */
 public class PreferenceListener implements StaticTypeListener {
-    protected Provider<Context> contextProvider;
-    protected Application application;
+    protected Context context;
     protected ContextScope scope;
 
-    public PreferenceListener(Provider<Context> contextProvider, Application application, ContextScope scope) {
-        this.contextProvider = contextProvider;
-        this.application = application;
+    public PreferenceListener(Context context, ContextScope scope) {
+        this.context = context;
         this.scope = scope;
     }
 
@@ -49,7 +46,7 @@ public class PreferenceListener implements StaticTypeListener {
         while (c != null) {
             for (Field field : c.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectPreference.class)) {
-                    typeEncounter.register(new PreferenceMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectPreference.class), scope));
+                    typeEncounter.register(new PreferenceMembersInjector<I>(field, context, field.getAnnotation(InjectPreference.class), scope));
                 }
             }
             c = c.getSuperclass();
@@ -62,7 +59,7 @@ public class PreferenceListener implements StaticTypeListener {
             while (c != null) {
                 for (Field field : c.getDeclaredFields()) {
                     if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectPreference.class)) {
-                        new PreferenceMembersInjector(field, contextProvider, field.getAnnotation(InjectPreference.class), scope).injectMembers(null);
+                        new PreferenceMembersInjector(field, context, field.getAnnotation(InjectPreference.class), scope).injectMembers(null);
                     }
                 }
                 c = c.getSuperclass();
@@ -74,15 +71,15 @@ public class PreferenceListener implements StaticTypeListener {
 
 class PreferenceMembersInjector<T> implements MembersInjector<T> {
     protected Field field;
-    protected Provider<Context> contextProvider;
+    protected Context context;
     protected InjectPreference annotation;
     protected ContextScope scope;
     protected T instance;
 
-    public PreferenceMembersInjector(Field field, Provider<Context> contextProvider, InjectPreference annotation, ContextScope scope) {
+    public PreferenceMembersInjector(Field field, Context context, InjectPreference annotation, ContextScope scope) {
         this.field = field;
         this.annotation = annotation;
-        this.contextProvider = contextProvider;
+        this.context = context;
         this.scope = scope;
     }
 
@@ -99,7 +96,7 @@ class PreferenceMembersInjector<T> implements MembersInjector<T> {
 
         try {
 
-            value = ((PreferenceActivity) contextProvider.get()).findPreference(annotation.value());
+            value = ((PreferenceActivity) context).findPreference(annotation.value());
 
             if (value == null && Nullable.notNullable(field) )
                 throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));

@@ -49,10 +49,9 @@ public abstract class RoboIntentService extends IntentService {
 
     @Override
     public void onCreate() {
-        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
+        final Injector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
         scope = injector.getInstance(ContextScope.class);
-        scope.enter(this);
         injector.injectMembers(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
@@ -60,7 +59,6 @@ public abstract class RoboIntentService extends IntentService {
 
     @Override
     public void onStart(Intent intent, int startId) {
-        scope.enter(this);
         super.onStart(intent, startId);
         eventManager.fire(new OnStartEvent() );
     }
@@ -69,7 +67,6 @@ public abstract class RoboIntentService extends IntentService {
     @Override
     public void onDestroy() {
         eventManager.fire(new OnDestroyEvent() );
-        scope.exit(this);
         super.onDestroy();
     }
 

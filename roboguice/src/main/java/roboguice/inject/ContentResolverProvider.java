@@ -15,20 +15,18 @@
  */
 package roboguice.inject;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
 import android.content.ContentResolver;
 import android.content.Context;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * 
  * @author Mike Burton
  */
-@ContextScoped
 public class ContentResolverProvider implements Provider<ContentResolver> {
-    @Inject
-    protected Context context;
+    @Inject protected Context context;
 
     public ContentResolver get() {
         return context.getContentResolver();

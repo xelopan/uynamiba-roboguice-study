@@ -2,15 +2,12 @@ package roboguice.event;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
-import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
-import roboguice.inject.ContextScope;
 
 import android.app.Application;
-import android.content.Context;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -33,14 +30,13 @@ public class ObservesTypeListenerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         app = Robolectric.application;
-        injector = RoboGuice.getApplicationInjector(app);
+        injector = RoboGuice.getRootInjector(app);
 
         eventManager = injector.getInstance(EventManager.class);
 
         eventOneMethods = ContextObserverTesterImpl.getMethods(EventOne.class);
         eventTwoMethods = ContextObserverTesterImpl.getMethods(EventTwo.class);
 
-        injector.getInstance(ContextScope.class).enter( EasyMock.createMock(Context.class) );
     }
 
     @Test

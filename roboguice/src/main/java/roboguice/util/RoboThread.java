@@ -36,10 +36,8 @@ public class RoboThread extends Thread {
         new Thread() {
             public void run() {
                 try {
-                    scope.enter(context);
                     RoboThread.this.run();
                 } finally {
-                    scope.exit(context);
                 }
             }
         }.start();

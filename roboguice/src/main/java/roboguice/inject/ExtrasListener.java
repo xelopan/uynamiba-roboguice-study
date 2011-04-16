@@ -36,10 +36,10 @@ import java.util.Map;
  * @author Pierre-Yves Ricau (py.ricau+roboguice@gmail.com)
  */
 public class ExtrasListener implements TypeListener {
-    protected Provider<Context> contextProvider;
+    protected Context context;
 
-    public ExtrasListener(Provider<Context> contextProvider) {
-        this.contextProvider = contextProvider;
+    public ExtrasListener(Context context) {
+        this.context = context;
     }
 
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
@@ -47,7 +47,7 @@ public class ExtrasListener implements TypeListener {
         for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
             for (Field field : c.getDeclaredFields())
                 if (field.isAnnotationPresent(InjectExtra.class))
-                    typeEncounter.register(new ExtrasMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectExtra.class)));
+                    typeEncounter.register(new ExtrasMembersInjector<I>(field, context, field.getAnnotation(InjectExtra.class)));
 
 
     }
@@ -57,21 +57,20 @@ public class ExtrasListener implements TypeListener {
 
     protected static class ExtrasMembersInjector<T> implements MembersInjector<T> {
         protected Field field;
-        protected Provider<Context> contextProvider;
+        protected Context context;
         protected InjectExtra annotation;
 
-        public ExtrasMembersInjector(Field field, Provider<Context> contextProvider, InjectExtra annotation) {
+        public ExtrasMembersInjector(Field field, Context context, InjectExtra annotation) {
             this.field = field;
-            this.contextProvider = contextProvider;
+            this.context = context;
             this.annotation = annotation;
         }
 
         public void injectMembers(T instance) {
-            final Context context = contextProvider.get();
 
-            if (!(context instanceof Activity)) {
+            if (!(context instanceof Activity))
                 return;
-            }
+
 
             final Activity activity = (Activity) context;
             Object value;
@@ -92,7 +91,7 @@ public class ExtrasListener implements TypeListener {
 
             value = extras.get(id);
 
-            value = convert(field, value, RoboGuice.getApplicationInjector(activity.getApplication()));
+            value = convert(field, value, RoboGuice.getInjector(activity));
 
             /*
              * Please notice : null checking is done AFTER conversion. Having
