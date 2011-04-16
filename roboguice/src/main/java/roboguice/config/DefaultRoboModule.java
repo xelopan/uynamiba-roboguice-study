@@ -42,7 +42,7 @@ import com.google.inject.name.Names;
  *
  * @author Mike Burton
  */
-public class RoboModule extends AbstractModule {
+public class DefaultRoboModule extends AbstractModule {
 
     protected Application application;
     protected Provider<Context> contextProvider;
@@ -52,7 +52,7 @@ public class RoboModule extends AbstractModule {
     protected EventManager eventManager;
 
 
-    public RoboModule( final Application application) {
+    public DefaultRoboModule(final Application application) {
 
         final Provider<Context> throwingContextProvider = new Provider<Context>() {
             public Context get() {
