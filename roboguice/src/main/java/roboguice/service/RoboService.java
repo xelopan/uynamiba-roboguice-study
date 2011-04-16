@@ -54,7 +54,7 @@ public abstract class RoboService extends Service {
 
     @Override
     public void onCreate() {
-        final Injector injector = RoboGuice.getInjector(getApplication());
+        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
         eventManager = injector.getInstance(EventManager.class);
         scope = injector.getInstance(ContextScope.class);
         scope.enter(this);

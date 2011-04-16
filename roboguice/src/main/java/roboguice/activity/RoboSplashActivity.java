@@ -31,11 +31,11 @@ public abstract class RoboSplashActivity extends Activity {
 
         new Thread(new Runnable() {
             public void run() {
-                // Set up a new thread since app.getInjector() takes so long
+                // Set up a new thread since app.createAndBindNewApplicationInjector() takes so long
                 // Set the execution context for this thread in case the user
                 // want to use the injector
                 final Application app = getApplication();
-                final ContextScope scope = RoboGuice.getInjector(app).getInstance(ContextScope.class);
+                final ContextScope scope = RoboGuice.getApplicationInjector(app).getInstance(ContextScope.class);
 
                 scope.enter(app);
                 try {
