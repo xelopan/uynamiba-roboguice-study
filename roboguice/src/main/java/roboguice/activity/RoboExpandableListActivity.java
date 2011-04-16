@@ -44,7 +44,7 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = RoboGuice.getInjector(getApplication());
+        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
         eventManager = injector.getInstance(EventManager.class);
         scope = injector.getInstance(ContextScope.class);
         scope.enter(this);
