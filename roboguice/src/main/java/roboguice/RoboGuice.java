@@ -1,7 +1,7 @@
 package roboguice;
 
 import roboguice.config.AbstractRoboModule;
-import roboguice.config.RoboModule;
+import roboguice.config.DefaultRoboModule;
 
 import android.app.Application;
 import android.content.Context;
@@ -77,14 +77,14 @@ public class RoboGuice {
             final int id = application.getResources().getIdentifier("roboguice_modules", "array", application.getPackageName());
             final String[] moduleNames = id>0 ? application.getResources().getStringArray(id) : new String[]{};
             final ArrayList<Module> modules = new ArrayList<Module>();
-            final RoboModule roboModule = new RoboModule(application);
+            final DefaultRoboModule roboModule = new DefaultRoboModule(application);
 
             modules.add(roboModule);
 
             try {
                 for (String name : moduleNames) {
                     final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
-                    modules.add( AbstractRoboModule.class.isAssignableFrom(clazz) ? clazz.getConstructor(RoboModule.class).newInstance(roboModule) : clazz.newInstance() );
+                    modules.add( AbstractRoboModule.class.isAssignableFrom(clazz) ? clazz.getConstructor(DefaultRoboModule.class).newInstance(roboModule) : clazz.newInstance() );
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);

@@ -6,15 +6,15 @@ import com.google.inject.AbstractModule;
 
 /**
  * An extension to guice's AbstractModule that gives the module access to
- * the RoboModule.
+ * the DefaultRoboModule.
  *
  * In addition, it overrides {@link #requestStaticInjection(Class[])} to add support
  * for RoboGuice's resource and view injection when injecting static methods.
  */
 public abstract class AbstractRoboModule extends AbstractModule {
-    protected RoboModule roboModule;
+    protected DefaultRoboModule roboModule;
 
-    protected AbstractRoboModule(RoboModule roboModule) {
+    protected AbstractRoboModule(DefaultRoboModule roboModule) {
         this.roboModule = roboModule;
     }
 
