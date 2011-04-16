@@ -3,7 +3,6 @@ package roboguice.receiver;
 import roboguice.RoboGuice;
 import roboguice.inject.ContextScope;
 
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,17 +22,14 @@ public abstract class RoboBroadcastReceiver extends BroadcastReceiver {
      */
     @Override
     public final void onReceive(Context context, Intent intent) {
-        final Injector injector = RoboGuice.getApplicationInjector((Application) context.getApplicationContext());
+        final Injector injector = RoboGuice.getInjector(context);
         final Context current = injector.getInstance(Context.class);
 
         scope = injector.getInstance(ContextScope.class);
-        scope.enter(context);
         try {
             injector.injectMembers(this);
             handleReceive(context, intent);
         } finally {
-            scope.exit(context);
-            scope.enter(current);
         }
     }
 

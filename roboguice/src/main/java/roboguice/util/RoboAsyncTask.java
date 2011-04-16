@@ -50,10 +50,8 @@ public abstract class RoboAsyncTask<ResultT> extends SafeAsyncTask<ResultT> {
         @Override
         protected ResultT doCall() throws Exception {
             try {
-                scope.enter(context);
                 return super.doCall();
             } finally {
-                scope.exit(context);
             }
         }
     }

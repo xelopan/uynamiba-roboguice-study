@@ -16,8 +16,8 @@
 package roboguice.inject;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
+import android.view.ContextThemeWrapper;
 
 import com.google.inject.MembersInjector;
 import com.google.inject.Provider;
@@ -34,13 +34,11 @@ import static com.google.inject.internal.util.$Preconditions.checkNotNull;
  * @author Mike Burton
  */
 public class ViewListener implements StaticTypeListener {
-    protected Provider<Context> contextProvider;
-    protected Application application;
+    protected Context context;
     protected ContextScope scope;
 
-    public ViewListener(Provider<Context> contextProvider, Application application, ContextScope scope) {
-        this.contextProvider = contextProvider;
-        this.application = application;
+    public ViewListener(Context context, ContextScope scope) {
+        this.context = context;
         this.scope = scope;
     }
 
@@ -49,7 +47,7 @@ public class ViewListener implements StaticTypeListener {
         for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
             for (Field field : c.getDeclaredFields())
                 if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
-                    typeEncounter.register(new ViewMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectView.class), scope));
+                    typeEncounter.register(new ViewMembersInjector<I>(field, context, field.getAnnotation(InjectView.class), scope));
 
     }
 
@@ -60,22 +58,22 @@ public class ViewListener implements StaticTypeListener {
             for( ; c!=Object.class; c=c.getSuperclass() )
                 for (Field field : c.getDeclaredFields())
                     if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
-                        new ViewMembersInjector(field, contextProvider, field.getAnnotation(InjectView.class), scope).injectMembers(null);
+                        new ViewMembersInjector(field, context, field.getAnnotation(InjectView.class), scope).injectMembers(null);
 
     }
 }
 
 class ViewMembersInjector<T> implements MembersInjector<T> {
     protected Field field;
-    protected Provider<Context> contextProvider;
+    protected Context context;
     protected InjectView annotation;
     protected ContextScope scope;
     protected T instance;
 
-    public ViewMembersInjector(Field field, Provider<Context> contextProvider, InjectView annotation, ContextScope scope) {
+    public ViewMembersInjector(Field field, Context context, InjectView annotation, ContextScope scope) {
         this.field = field;
         this.annotation = annotation;
-        this.contextProvider = contextProvider;
+        this.context = context;
         this.scope = scope;
     }
 
@@ -92,7 +90,7 @@ class ViewMembersInjector<T> implements MembersInjector<T> {
 
         try {
 
-            value = ((Activity) contextProvider.get()).findViewById(annotation.value());
+            value = ((Activity) context).findViewById(annotation.value());
 
             if (value == null && Nullable.notNullable(field))
                 throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));

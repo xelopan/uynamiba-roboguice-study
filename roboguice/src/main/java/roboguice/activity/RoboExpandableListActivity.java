@@ -44,10 +44,9 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
+        final Injector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
         scope = injector.getInstance(ContextScope.class);
-        scope.enter(this);
         injector.injectMembers(this);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
@@ -81,21 +80,18 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
 
     @Override
     protected void onRestart() {
-        scope.enter(this);
         super.onRestart();
         eventManager.fire(new OnRestartEvent());
     }
 
     @Override
     protected void onStart() {
-        scope.enter(this);
         super.onStart();
         eventManager.fire(new OnStartEvent());
     }
 
     @Override
     protected void onResume() {
-        scope.enter(this);
         super.onResume();
         eventManager.fire(new OnResumeEvent());
     }
@@ -109,30 +105,24 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
     @Override
     protected void onNewIntent( Intent intent ) {
         super.onNewIntent(intent);
-        scope.enter(this);
         eventManager.fire(new OnNewIntentEvent());
     }
 
     @Override
     protected void onStop() {
-        scope.enter(this);
         try {
             eventManager.fire(new OnStopEvent());
         } finally {
-            scope.exit(this);
             super.onStop();
         }
     }
 
     @Override
     protected void onDestroy() {
-        scope.enter(this);
         try {
             eventManager.fire(new OnDestroyEvent());
         } finally {
             eventManager.clear(this);
-            scope.exit(this);
-            scope.dispose(this);
             super.onDestroy();
         }
     }
@@ -153,11 +143,9 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        scope.enter(this);
         try {
             eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
         } finally {
-            scope.exit(this);
         }
     }
 
