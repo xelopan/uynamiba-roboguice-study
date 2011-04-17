@@ -23,18 +23,11 @@ import java.util.Date;
 
 public class PersonFromNameExtraProvider implements Provider<Person> {
 
-    @InjectExtra("nameExtra")
-    protected String nameExtra;
-
-    @InjectExtra(value = "ageExtra", optional = true)
-    protected Date   ageExtra;
+    @InjectExtra("nameExtra") protected String nameExtra;
+    @InjectExtra(value = "ageExtra", optional = true) protected Date   ageExtra;
 
     public Person get() {
-        if (ageExtra == null) {
-            return new Person(nameExtra);
-        } else {
-            return new Person(nameExtra, ageExtra);
-        }
+        return ageExtra==null ? new Person(nameExtra) : new Person(nameExtra,ageExtra);
     }
 
 }

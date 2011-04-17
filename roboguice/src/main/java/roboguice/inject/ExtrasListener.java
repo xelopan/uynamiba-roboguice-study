@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public class ExtrasListener implements TypeListener {
     @Inject protected Injector injector;
-    @Inject protected DoAfterInjection doAfterInjection;
 
     protected ArrayList<Runnable> queue = new ArrayList<Runnable>();
     protected Context context;
@@ -61,15 +60,6 @@ public class ExtrasListener implements TypeListener {
     }
 
 
-    /**
-     * Trick to force us to wait to do injection until the injector is actually available
-     */
-    public static class DoAfterInjection {
-        @Inject
-        public DoAfterInjection( ExtrasListener extrasListener ) {
-            extrasListener.injectExtras();
-        }
-    }
 
 
 
@@ -84,7 +74,13 @@ public class ExtrasListener implements TypeListener {
         }
 
         public void injectMembers(T instance) {
-            queue.add( new DoInjection(instance) );
+            final Runnable r = new DoInjection(instance);
+            
+            if( injector==null )
+                queue.add( r );
+
+            else
+                r.run();
         }
 
 
