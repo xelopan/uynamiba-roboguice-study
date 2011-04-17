@@ -40,10 +40,12 @@ public class DefaultContextRoboModule extends AbstractModule {
         resourceListener = new ResourceListener((Application)context.getApplicationContext());
         eventManager = new EventManager(context);
 
-        //final ExtrasListener extrasListener = new ExtrasListener(context);
+
+        final ExtrasListener extrasListener = new ExtrasListener(context);
         final PreferenceListener preferenceListener = new PreferenceListener(context);
         final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator(getProvider(Handler.class));
 
+        requestInjection(extrasListener);
 
 
         // Sundry Android Classes
@@ -59,7 +61,7 @@ public class DefaultContextRoboModule extends AbstractModule {
 
         // Android Resources, Views and extras require special handling
         bindListener(Matchers.any(), resourceListener);
-        //bindListener(Matchers.any(), extrasListener);
+        bindListener(Matchers.any(), extrasListener);
         bindListener(Matchers.any(), viewListener);
         bindListener(Matchers.any(), preferenceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));

@@ -15,10 +15,9 @@
  */
 package roboguice.inject;
 
-import roboguice.RoboGuice;
-
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.inject.*;
@@ -36,6 +35,8 @@ import java.util.Map;
  * @author Pierre-Yves Ricau (py.ricau+roboguice@gmail.com)
  */
 public class ExtrasListener implements TypeListener {
+    @Inject protected Injector injector;
+
     protected Context context;
 
     public ExtrasListener(Context context) {
@@ -47,7 +48,7 @@ public class ExtrasListener implements TypeListener {
         for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
             for (Field field : c.getDeclaredFields())
                 if (field.isAnnotationPresent(InjectExtra.class))
-                    typeEncounter.register(new ExtrasMembersInjector<I>(field, context, field.getAnnotation(InjectExtra.class)));
+                    typeEncounter.register(new ExtrasMembersInjector<I>(field, field.getAnnotation(InjectExtra.class)));
 
 
     }
@@ -55,14 +56,12 @@ public class ExtrasListener implements TypeListener {
 
 
 
-    protected static class ExtrasMembersInjector<T> implements MembersInjector<T> {
+    protected class ExtrasMembersInjector<T> implements MembersInjector<T> {
         protected Field field;
-        protected Context context;
         protected InjectExtra annotation;
 
-        public ExtrasMembersInjector(Field field, Context context, InjectExtra annotation) {
+        public ExtrasMembersInjector(Field field, InjectExtra annotation) {
             this.field = field;
-            this.context = context;
             this.annotation = annotation;
         }
 
@@ -76,7 +75,12 @@ public class ExtrasListener implements TypeListener {
             Object value;
 
             final String id = annotation.value();
-            final Bundle extras = activity.getIntent().getExtras();
+            final Intent intent = activity.getIntent();
+
+            if(intent==null)
+                return;
+
+            final Bundle extras = intent.getExtras();
 
             if (extras == null || !extras.containsKey(id)) {
                 // If no extra found and the extra injection is optional, no
@@ -91,7 +95,7 @@ public class ExtrasListener implements TypeListener {
 
             value = extras.get(id);
 
-            value = convert(field, value, RoboGuice.getInjector(activity));
+            value = convert(field, value);
 
             /*
              * Please notice : null checking is done AFTER conversion. Having
@@ -121,7 +125,7 @@ public class ExtrasListener implements TypeListener {
         }
 
         @SuppressWarnings("unchecked")
-        protected Object convert(Field field, Object value, Injector injector) {
+        protected Object convert(Field field, Object value) {
 
             // Don't try to convert null or primitives
             if (value == null || field.getType().isPrimitive()) {
