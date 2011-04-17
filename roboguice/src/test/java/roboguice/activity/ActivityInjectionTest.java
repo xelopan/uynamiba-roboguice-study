@@ -38,8 +38,8 @@ public class ActivityInjectionTest {
     @Before
     public void setup() {
         activity = new DummyActivity();
-        RoboGuice.createAndBindNewContextInjector(activity, new MyAbstractModule());
         activity.setIntent( new Intent(Robolectric.application,DummyActivity.class).putExtra("foobar","goober").putExtra("json","{ 'x':'y'}") );
+        RoboGuice.createAndBindNewContextInjector(activity, new MyAbstractModule());
         activity.onCreate(null);
 
         prefsActivity = new DummyPreferenceActivity();

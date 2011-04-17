@@ -57,6 +57,7 @@ public class DefaultContextRoboModule extends AbstractModule {
         bind(AssetManager.class).toProvider(AssetManagerProvider.class);
         bind(ViewListener.class).toInstance(viewListener);
         bind(PreferenceListener.class).toInstance(preferenceListener);
+        bind(ExtrasListener.class).toInstance(extrasListener);
         
 
         // Android Resources, Views and extras require special handling
@@ -65,7 +66,6 @@ public class DefaultContextRoboModule extends AbstractModule {
         bindListener(Matchers.any(), viewListener);
         bindListener(Matchers.any(), preferenceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
-
 
 
 

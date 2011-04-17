@@ -26,15 +26,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import static com.google.inject.internal.util.$Preconditions.checkNotNull;
-
 /**
  * 
  * @author Mike Burton
  */
 public class ViewListener implements StaticTypeListener {
     protected Context context;
-    protected ArrayList<ViewMembersInjector<?>> viewsForInjection = new ArrayList<ViewMembersInjector<?>>();
+    protected ArrayList<ViewMembersInjector<?>> queue = new ArrayList<ViewMembersInjector<?>>();
 
     public ViewListener(Context context) {
         this.context = context;
@@ -60,13 +58,9 @@ public class ViewListener implements StaticTypeListener {
 
     }
 
-    public void registerViewForInjection(ViewMembersInjector<?> injector) {
-        viewsForInjection.add(injector);
-    }
-
     public void injectViews() {
-        for (int i = viewsForInjection.size() - 1; i >= 0; --i)
-            viewsForInjection.remove(i).reallyInjectMembers();
+        for (int i = queue.size() - 1; i >= 0; --i)
+            queue.remove(i).reallyInjectMembers();
     }
 
 
@@ -87,12 +81,10 @@ public class ViewListener implements StaticTypeListener {
         public void injectMembers(T instance) {
             // Mark instance for injection during setContentView
             this.instance = instance;
-            registerViewForInjection(this);
+            queue.add(this);
         }
 
         public void reallyInjectMembers() {
-            checkNotNull(instance);
-
             Object value = null;
 
             try {

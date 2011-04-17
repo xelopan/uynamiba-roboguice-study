@@ -26,15 +26,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import static com.google.inject.internal.util.$Preconditions.checkNotNull;
-
 /**
  * 
  * @author Mike Burton
  */
 public class PreferenceListener implements StaticTypeListener {
     protected Context context;
-    protected ArrayList<PreferenceMembersInjector<?>> preferencesForInjection = new ArrayList<PreferenceMembersInjector<?>>();
+    protected ArrayList<PreferenceMembersInjector<?>> queue = new ArrayList<PreferenceMembersInjector<?>>();
 
     public PreferenceListener(Context context) {
         this.context = context;
@@ -68,13 +66,9 @@ public class PreferenceListener implements StaticTypeListener {
     }
 
 
-    public void registerPreferenceForInjection(PreferenceMembersInjector<?> injector) {
-        preferencesForInjection.add(injector);
-    }
-
     public void injectPreferenceViews() {
-        for (int i = preferencesForInjection.size() - 1; i >= 0; --i)
-            preferencesForInjection.remove(i).reallyInjectMembers();
+        for (int i = queue.size() - 1; i >= 0; --i)
+            queue.remove(i).reallyInjectMembers();
     }
 
 
@@ -94,12 +88,10 @@ public class PreferenceListener implements StaticTypeListener {
         public void injectMembers(T instance) {
             // Mark instance for injection during setContentView
             this.instance = instance;
-            registerPreferenceForInjection(this);
+            queue.add(this);
         }
 
         public void reallyInjectMembers() {
-            checkNotNull(instance);
-
             Object value = null;
 
             try {
