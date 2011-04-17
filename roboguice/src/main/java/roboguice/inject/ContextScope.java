@@ -19,20 +19,10 @@ import java.util.ArrayList;
 
 public class ContextScope {
 
-    protected ArrayList<ViewMembersInjector<?>> viewsForInjection = new ArrayList<ViewMembersInjector<?>>();
     protected ArrayList<PreferenceMembersInjector<?>> preferencesForInjection = new ArrayList<PreferenceMembersInjector<?>>();
-
-    public void registerViewForInjection(ViewMembersInjector<?> injector) {
-        viewsForInjection.add(injector);
-    }
 
     public void registerPreferenceForInjection(PreferenceMembersInjector<?> injector) {
         preferencesForInjection.add(injector);
-    }
-
-    public void injectViews() {
-        for (int i = viewsForInjection.size() - 1; i >= 0; --i)
-            viewsForInjection.remove(i).reallyInjectMembers();
     }
 
     public void injectPreferenceViews() {

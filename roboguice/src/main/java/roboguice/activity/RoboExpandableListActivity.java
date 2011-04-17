@@ -18,7 +18,7 @@ package roboguice.activity;
 import roboguice.RoboGuice;
 import roboguice.activity.event.*;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
+import roboguice.inject.ViewListener;
 
 import android.app.ExpandableListActivity;
 import android.content.Intent;
@@ -27,7 +27,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
-import com.google.inject.Injector;
+import com.google.inject.Inject;
 
 /**
  * A {@link RoboExpandableListActivity} extends from
@@ -39,15 +39,12 @@ import com.google.inject.Injector;
  * @author Mike Burton
  */
 public class RoboExpandableListActivity extends ExpandableListActivity {
-    protected EventManager eventManager;
-    protected ContextScope scope;
+    @Inject protected EventManager eventManager;
+    @Inject protected ViewListener viewListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = RoboGuice.getInjector(this);
-        eventManager = injector.getInstance(EventManager.class);
-        scope = injector.getInstance(ContextScope.class);
-        injector.injectMembers(this);
+        RoboGuice.getInjector(this).injectMembers(this);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
@@ -55,21 +52,21 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
     @Override
     public void setContentView(int layoutResID) {
         super.setContentView(layoutResID);
-        scope.injectViews();
+        viewListener.injectViews();
         eventManager.fire(new OnContentViewAvailableEvent());
     }
 
     @Override
     public void setContentView(View view, LayoutParams params) {
         super.setContentView(view, params);
-        scope.injectViews();
+        viewListener.injectViews();
         eventManager.fire(new OnContentViewAvailableEvent());
     }
 
     @Override
     public void setContentView(View view) {
         super.setContentView(view);
-        scope.injectViews();
+        viewListener.injectViews();
         eventManager.fire(new OnContentViewAvailableEvent());
     }
 
@@ -143,10 +140,7 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        try {
-            eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
-        } finally {
-        }
+        eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
     }
 
 }
