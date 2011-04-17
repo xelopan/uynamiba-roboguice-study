@@ -19,6 +19,7 @@ import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.widget.TextView;
 
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 
 import javax.annotation.Nullable;
@@ -36,7 +37,7 @@ public class ActivityInjectionTest {
     @Before
     public void setup() {
         activity = new DummyActivity();
-        activity.setIntent( new Intent(Robolectric.application,DummyActivity.class).putExtra("foobar","goober") );
+        activity.setIntent( new Intent(Robolectric.application,DummyActivity.class).putExtra("foobar","goober").putExtra("json","{ 'x':'y'}") );
         activity.onCreate(null);
 
         prefsActivity = new DummyPreferenceActivity();
@@ -59,13 +60,18 @@ public class ActivityInjectionTest {
     }
 
     @Test
-    @Ignore
     public void shouldInjectExtras() {
         assertThat(activity.foobar,is("goober"));
     }
 
+    @Test
+    public void shouldInjectJsonExtras() {
+        assertThat(activity.json.get("x").getAsString(), is("y"));
+    }
+
     // BUG This doesn't work yet because createNewPreferenceScreen doesn't properly model whatever's goign on
-    @Test @Ignore
+    @Test
+    @Ignore
     public void shouldInjectPreference() {
         assertThat(prefsActivity.pref, is(prefsActivity.findPreference("xxx")));
     }
@@ -76,6 +82,7 @@ public class ActivityInjectionTest {
         @InjectView(R.id.text1) protected TextView text1;
         @InjectResource(R.string.cancel) protected String cancel;
         @InjectExtra("foobar") protected String foobar;
+        @InjectExtra("json") protected JsonObject json;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
