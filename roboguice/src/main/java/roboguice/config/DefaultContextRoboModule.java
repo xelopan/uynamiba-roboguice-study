@@ -25,7 +25,6 @@ import com.google.inject.matcher.Matchers;
 
 public class DefaultContextRoboModule extends AbstractModule {
     protected Context context;
-    protected ContextScope contextScope;
     protected ResourceListener resourceListener;
     protected ViewListener viewListener;
     protected EventManager eventManager;
@@ -37,19 +36,17 @@ public class DefaultContextRoboModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(Context.class).toInstance(context);
-        contextScope = new ContextScope();
         viewListener = new ViewListener(context);
         resourceListener = new ResourceListener((Application)context.getApplicationContext());
         eventManager = new EventManager(context);
 
         //final ExtrasListener extrasListener = new ExtrasListener(context);
-        final PreferenceListener preferenceListener = new PreferenceListener(context,contextScope);
+        final PreferenceListener preferenceListener = new PreferenceListener(context);
         final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator(getProvider(Handler.class));
 
 
 
         // Sundry Android Classes
-        bind(ContextScope.class).toInstance(contextScope);
         bind(SharedPreferences.class).toProvider(SharedPreferencesProvider.class);
         bind(Resources.class).toProvider(ResourcesProvider.class);
         bind(ContentResolver.class).toProvider(ContentResolverProvider.class);

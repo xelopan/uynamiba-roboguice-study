@@ -18,7 +18,7 @@ package roboguice.activity;
 import roboguice.RoboGuice;
 import roboguice.activity.event.*;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
+import roboguice.inject.PreferenceListener;
 import roboguice.inject.ViewListener;
 
 import android.content.Intent;
@@ -47,7 +47,8 @@ import com.google.inject.Inject;
 public abstract class RoboPreferenceActivity extends PreferenceActivity {
     @Inject protected EventManager eventManager;
     @Inject protected ViewListener viewListener;
-    @Inject protected ContextScope scope;
+    @Inject protected PreferenceListener preferenceListener;
+
 
     /** {@inheritDoc } */
     @Override
@@ -60,7 +61,7 @@ public abstract class RoboPreferenceActivity extends PreferenceActivity {
     @Override
     public void setPreferenceScreen(PreferenceScreen preferenceScreen) {
         super.setPreferenceScreen(preferenceScreen);
-        scope.injectPreferenceViews();
+        preferenceListener.injectPreferenceViews();
     }
 
     @Override

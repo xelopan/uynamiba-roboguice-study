@@ -45,7 +45,7 @@ public class ViewListener implements StaticTypeListener {
         for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
             for (Field field : c.getDeclaredFields())
                 if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
-                    typeEncounter.register(new ViewMembersInjector<I>(field, context, field.getAnnotation(InjectView.class)));
+                    typeEncounter.register(new ViewMembersInjector<I>(field, field.getAnnotation(InjectView.class)));
 
     }
 
@@ -56,7 +56,7 @@ public class ViewListener implements StaticTypeListener {
             for( ; c!=Object.class; c=c.getSuperclass() )
                 for (Field field : c.getDeclaredFields())
                     if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
-                        new ViewMembersInjector(field, context, field.getAnnotation(InjectView.class)).injectMembers(null);
+                        new ViewMembersInjector(field, field.getAnnotation(InjectView.class)).injectMembers(null);
 
     }
 
@@ -76,14 +76,12 @@ public class ViewListener implements StaticTypeListener {
 
     public class ViewMembersInjector<T> implements MembersInjector<T> {
         protected Field field;
-        protected Context context;
         protected InjectView annotation;
         protected T instance;
 
-        public ViewMembersInjector(Field field, Context context, InjectView annotation) {
+        public ViewMembersInjector(Field field, InjectView annotation) {
             this.field = field;
             this.annotation = annotation;
-            this.context = context;
         }
 
         public void injectMembers(T instance) {
