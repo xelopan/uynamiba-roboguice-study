@@ -67,7 +67,6 @@ public class ActivityInjectionTest {
     }
 
     @Test
-    @Ignore
     public void shouldInjectExtrasIntoPojosToo() {
         assertThat(activity.someDumbObject.foobar,is("goober"));
     }
@@ -147,6 +146,7 @@ public class ActivityInjectionTest {
     public static class MyAbstractModule extends AbstractModule {
         @Override
         protected void configure() {
+            bind(SomeDumbObject.class);
             bind(new TypeLiteral<ExtraConverter<String,JsonObject>>(){}).toInstance(new ExtraConverter<String, JsonObject>() {
                 @Override
                 public JsonObject convert(String s) {
