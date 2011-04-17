@@ -31,7 +31,7 @@ public class SharedPreferencesProvider implements Provider<SharedPreferences> {
 
     protected String preferencesName;
 
-    @Inject protected Provider<Context> contextProvider;
+    @Inject protected Context context;
 
     public SharedPreferencesProvider() {
         preferencesName = DEFAULT;
@@ -47,7 +47,7 @@ public class SharedPreferencesProvider implements Provider<SharedPreferences> {
     }
 
     public SharedPreferences get() {
-        return contextProvider.get().getSharedPreferences(preferencesName, Context.MODE_PRIVATE);
+        return context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE);
     }
 
     // http://code.google.com/p/google-guice/wiki/FrequentlyAskedQuestions => How can I inject optional parameters into a constructor?

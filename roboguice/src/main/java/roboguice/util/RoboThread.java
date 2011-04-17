@@ -1,10 +1,7 @@
 package roboguice.util;
 
-import roboguice.inject.ContextScope;
-
-import android.content.Context;
-
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Provider;
 
 /**
@@ -16,8 +13,11 @@ import com.google.inject.Provider;
  * names, etc. won't be honored. Yet.
  */
 public class RoboThread extends Thread {
-    @Inject static protected Provider<Context> contextProvider;
-    @Inject static protected Provider<ContextScope> scopeProvider;
+    @Inject static protected Provider<Injector> injectorProvider;
+
+    {
+        //injectorProvider.get().injectMembers(this);
+    }
 
     public RoboThread() {
     }
@@ -26,21 +26,4 @@ public class RoboThread extends Thread {
         super(runnable);
     }
 
-    @Override
-    public void start() {
-        final ContextScope scope = scopeProvider.get();
-        final Context context = contextProvider.get();
-
-        // BUG any parameters set in the RoboThread are ignored other than Runnable.
-        // This means that priorities, groups, names, etc. won't be honored. Yet.
-        new Thread() {
-            public void run() {
-                try {
-                    RoboThread.this.run();
-                } finally {
-                }
-            }
-        }.start();
-
-    }
 }

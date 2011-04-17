@@ -51,9 +51,22 @@ public class RoboGuice {
             if( rtrn!=null )
                 return rtrn;
 
+            final int id = context.getResources().getIdentifier("roboguice_modules", "array", context.getPackageName());
+            final String[] moduleNames = id>0 ? context.getResources().getStringArray(id) : new String[]{};
             final ArrayList<Module> m = new ArrayList<Module>();
-            m.add( new DefaultContextRoboModule(context));
+            final DefaultContextRoboModule contextRoboModule = new DefaultContextRoboModule(context);
+            m.add( contextRoboModule );
             m.addAll(Arrays.asList(modules));
+
+
+            try {
+                for (String name : moduleNames) {
+                    final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
+                    m.add( AbstractRoboModule.class.isAssignableFrom(clazz) ? clazz.getConstructor(DefaultContextRoboModule.class).newInstance(contextRoboModule) : clazz.newInstance() );
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
             rtrn = getRootInjector((Application) context.getApplicationContext()).createChildInjector(m);
             injectors.put(context, rtrn);
@@ -81,23 +94,7 @@ public class RoboGuice {
             if( rootInjector!=null )
                 return rootInjector;
 
-            final int id = application.getResources().getIdentifier("roboguice_modules", "array", application.getPackageName());
-            final String[] moduleNames = id>0 ? application.getResources().getStringArray(id) : new String[]{};
-            final ArrayList<Module> modules = new ArrayList<Module>();
-            final DefaultApplicationRoboModule applicationRoboModule = new DefaultApplicationRoboModule(application);
-
-            modules.add(applicationRoboModule);
-
-            try {
-                for (String name : moduleNames) {
-                    final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
-                    modules.add( AbstractRoboModule.class.isAssignableFrom(clazz) ? clazz.getConstructor(DefaultApplicationRoboModule.class).newInstance(applicationRoboModule) : clazz.newInstance() );
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            rootInjector = createAndBindNewRootInjector(application, stage, modules.toArray(new Module[modules.size()]));
+            rootInjector = createAndBindNewRootInjector(application, stage, new DefaultApplicationRoboModule(application));
 
         }
 
