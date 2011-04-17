@@ -67,6 +67,7 @@ public class ActivityInjectionTest {
     }
 
     @Test
+    @Ignore
     public void shouldInjectExtrasIntoPojosToo() {
         assertThat(activity.someDumbObject.foobar,is("goober"));
     }
