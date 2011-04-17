@@ -38,7 +38,7 @@ public class DefaultContextRoboModule extends AbstractModule {
     protected void configure() {
         bind(Context.class).toInstance(context);
         contextScope = new ContextScope();
-        viewListener = new ViewListener(context, contextScope);
+        viewListener = new ViewListener(context);
         resourceListener = new ResourceListener((Application)context.getApplicationContext());
         eventManager = new EventManager(context);
 
@@ -56,6 +56,9 @@ public class DefaultContextRoboModule extends AbstractModule {
         bind(EventManager.class).toInstance(eventManager);
         bind(EventListenerThreadingDecorator.class).toInstance(observerThreadingDecorator);
         bind(AssetManager.class).toProvider(AssetManagerProvider.class);
+        bind(ViewListener.class).toInstance(viewListener);
+        bind(PreferenceListener.class).toInstance(preferenceListener);
+        
 
         // Android Resources, Views and extras require special handling
         bindListener(Matchers.any(), resourceListener);
@@ -63,6 +66,7 @@ public class DefaultContextRoboModule extends AbstractModule {
         bindListener(Matchers.any(), viewListener);
         bindListener(Matchers.any(), preferenceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
+
 
 
 
