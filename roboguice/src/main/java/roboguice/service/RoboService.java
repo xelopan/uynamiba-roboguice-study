@@ -12,7 +12,6 @@ package roboguice.service;
 
 import roboguice.RoboGuice;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
 import roboguice.service.event.OnConfigurationChangedEvent;
 import roboguice.service.event.OnCreateEvent;
 import roboguice.service.event.OnDestroyEvent;
@@ -22,6 +21,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
 
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
@@ -49,15 +49,11 @@ import com.google.inject.Injector;
  */
 public abstract class RoboService extends Service {
 
-    protected EventManager eventManager;
-    protected ContextScope scope;
+    @Inject protected EventManager eventManager;
 
     @Override
     public void onCreate() {
-        final Injector injector = RoboGuice.getInjector(this);
-        eventManager = injector.getInstance(EventManager.class);
-        scope = injector.getInstance(ContextScope.class);
-        injector.injectMembers(this);
+        RoboGuice.getInjector(this).injectMembers(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
     }
