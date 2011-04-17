@@ -6,10 +6,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import roboguice.inject.InjectExtra;
-import roboguice.inject.InjectPreference;
-import roboguice.inject.InjectResource;
-import roboguice.inject.InjectView;
+import roboguice.RoboGuice;
+import roboguice.inject.*;
 
 import android.R;
 import android.content.Intent;
@@ -20,7 +18,10 @@ import android.preference.PreferenceScreen;
 import android.widget.TextView;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.google.inject.TypeLiteral;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -37,6 +38,7 @@ public class ActivityInjectionTest {
     @Before
     public void setup() {
         activity = new DummyActivity();
+        RoboGuice.createAndBindNewContextInjector(activity, new MyAbstractModule());
         activity.setIntent( new Intent(Robolectric.application,DummyActivity.class).putExtra("foobar","goober").putExtra("json","{ 'x':'y'}") );
         activity.onCreate(null);
 
@@ -65,6 +67,11 @@ public class ActivityInjectionTest {
     }
 
     @Test
+    public void shouldInjectExtrasIntoPojosToo() {
+        assertThat(activity.someDumbObject.foobar,is("goober"));
+    }
+
+    @Test
     public void shouldInjectJsonExtras() {
         assertThat(activity.json.get("x").getAsString(), is("y"));
     }
@@ -83,6 +90,7 @@ public class ActivityInjectionTest {
         @InjectResource(R.string.cancel) protected String cancel;
         @InjectExtra("foobar") protected String foobar;
         @InjectExtra("json") protected JsonObject json;
+        @Inject protected SomeDumbObject someDumbObject;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +136,22 @@ public class ActivityInjectionTest {
             } catch( Exception e ) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    public static class SomeDumbObject {
+        @InjectExtra("foobar") protected String foobar;
+    }
+
+    public static class MyAbstractModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(new TypeLiteral<ExtraConverter<String,JsonObject>>(){}).toInstance(new ExtraConverter<String, JsonObject>() {
+                @Override
+                public JsonObject convert(String s) {
+                    return new JsonParser().parse(s).getAsJsonObject();
+                }
+            });
         }
     }
 }
