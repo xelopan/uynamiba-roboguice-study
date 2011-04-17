@@ -61,7 +61,7 @@ public class DefaultContextRoboModule extends AbstractModule {
         //bindListener(Matchers.any(), extrasListener);
         bindListener(Matchers.any(), viewListener);
         bindListener(Matchers.any(), preferenceListener);
-        bindListener(Matchers.any(), new ObservesTypeListener(getProvider(Context.class), eventManager, observerThreadingDecorator));
+        bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
 
 
         requestInjection(observerThreadingDecorator);

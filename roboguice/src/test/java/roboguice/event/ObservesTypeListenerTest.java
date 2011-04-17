@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
 
 import android.app.Application;
 
@@ -30,7 +31,7 @@ public class ObservesTypeListenerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         app = Robolectric.application;
-        injector = RoboGuice.getRootInjector(app);
+        injector = RoboGuice.getInjector( new DummyActivity() );
 
         eventManager = injector.getInstance(EventManager.class);
 
@@ -41,13 +42,12 @@ public class ObservesTypeListenerTest {
 
     @Test
     public void simulateInjection() {
-        final InjectedTestClass testClass = new InjectedTestClass();
-        injector.injectMembers(testClass);
+        final InjectedTestClass testClass = injector.getInstance(InjectedTestClass.class);
 
         eventManager.fire(new EventOne());
 
-        testClass.getTester().verifyCallCount(eventOneMethods, EventOne.class, 1);
-        testClass.getTester().verifyCallCount(eventTwoMethods, EventTwo.class, 0);
+        testClass.tester.verifyCallCount(eventOneMethods, EventOne.class, 1);
+        testClass.tester.verifyCallCount(eventTwoMethods, EventTwo.class, 0);
     }
 
     @Test(expected = RuntimeException.class)
@@ -56,15 +56,15 @@ public class ObservesTypeListenerTest {
     }
 
     static public class InjectedTestClass{
-        @Inject
-        public ContextObserverTesterImpl tester;
-
-        public ContextObserverTesterImpl getTester() {
-            return tester;
-        }
+        @Inject public ContextObserverTesterImpl tester;
     }
 
     public class MalformedObserves{
         public void malformedObserves(int val, @Observes EventOne event){}
+    }
+
+
+    public static class DummyActivity extends RoboActivity {
+
     }
 }
