@@ -65,7 +65,7 @@ public class DefaultContextRoboModule extends AbstractModule {
         
 
         // Android Resources, Views and extras require special handling
-        bindListener(Matchers.any(), new ExtrasListenerListener());  // BUG highly inefficient, but Matchers.identicalTo not working
+        bindListener(Matchers.identicalTo(extrasListener), new ExtrasListenerListener());
         bindListener(Matchers.any(), resourceListener);
         bindListener(Matchers.any(), extrasListener);
         bindListener(Matchers.any(), viewListener);
