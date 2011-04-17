@@ -10,6 +10,7 @@ import roboguice.activity.RoboActivity;
 
 import android.app.Application;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -31,7 +32,15 @@ public class ObservesTypeListenerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         app = Robolectric.application;
-        injector = RoboGuice.getInjector( new DummyActivity() );
+        injector = RoboGuice.createAndBindNewContextInjector(new DummyActivity(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                // BUG it's necessary when using child injectors to explicitly bind Just-In-Time bindings
+                // in order to force them to stay on the child injector instead of the parent.  If they
+                // go to the parent, the event listeners dont' get run :(
+                bind(ContextObserverTesterImpl.class);
+            }
+        } );
 
         eventManager = injector.getInstance(EventManager.class);
 
