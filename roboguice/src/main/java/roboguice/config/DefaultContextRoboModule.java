@@ -4,9 +4,6 @@ import roboguice.event.EventManager;
 import roboguice.event.ObservesTypeListener;
 import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
 import roboguice.inject.*;
-import roboguice.util.Ln;
-import roboguice.util.RoboAsyncTask;
-import roboguice.util.RoboThread;
 
 import android.app.Application;
 import android.content.ContentResolver;
@@ -68,8 +65,8 @@ public class DefaultContextRoboModule extends AbstractModule {
         requestInjection(eventManager);
 
 
-        requestStaticInjection(Ln.class);
-        requestStaticInjection(RoboThread.class);
-        requestStaticInjection(RoboAsyncTask.class);
+        //requestStaticInjection(Ln.class);
+        //requestStaticInjection(RoboThread.class);
+        //requestStaticInjection(RoboAsyncTask.class);
     }
 }

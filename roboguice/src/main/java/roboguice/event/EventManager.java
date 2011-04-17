@@ -7,7 +7,6 @@ import android.app.Application;
 import android.content.Context;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import java.lang.ref.WeakReference;
@@ -32,7 +31,7 @@ import java.util.*;
 @SuppressWarnings({"unchecked"})
 @Singleton
 public class EventManager {
-    @Inject protected Provider<Context> contextProvider;
+    @Inject protected Context context;
 
     protected Map<Context, Map<Class<?>, Set<EventListener<?>>>> registrations = new WeakHashMap<Context, Map<Class<?>, Set<EventListener<?>>>>();
 
@@ -44,7 +43,7 @@ public class EventManager {
      * @param <T> event type
      */
     public <T> void registerObserver( Class<T> event, EventListener listener ) {
-        registerObserver(contextProvider.get(),event,listener);
+        registerObserver(context,event,listener);
     }
 
     /**
@@ -56,7 +55,7 @@ public class EventManager {
      * @param <T> event type
      */
     public <T> void registerObserver(Object instance, Method method, Class<T> event) {
-        registerObserver(contextProvider.get(),instance,method,event);
+        registerObserver(context,instance,method,event);
     }
 
      /**
@@ -67,7 +66,7 @@ public class EventManager {
      * @param <T> event type
      */
     public <T> void unregisterObserver(Class<T> event, EventListener<T> listener ) {
-        unregisterObserver(contextProvider.get(),event,listener);
+        unregisterObserver(context,event,listener);
     }
 
     /**
@@ -78,7 +77,7 @@ public class EventManager {
      * @param <T> event type
      */
     public <T> void unregisterObserver(Object instance, Class<T> event) {
-        unregisterObserver(contextProvider.get(),instance,event);
+        unregisterObserver(context,instance,event);
     }
 
     /**
@@ -88,7 +87,7 @@ public class EventManager {
      * @param event observed
      */
     public void fire( Object event ) {
-        fire(contextProvider.get(), event);
+        fire(context, event);
     }
 
     /**
