@@ -31,9 +31,14 @@ import java.util.*;
 @SuppressWarnings({"unchecked"})
 @Singleton
 public class EventManager {
-    @Inject protected Context context;
+    protected Context context;
 
     protected Map<Context, Map<Class<?>, Set<EventListener<?>>>> registrations = new WeakHashMap<Context, Map<Class<?>, Set<EventListener<?>>>>();
+
+    @Inject
+    public EventManager(Context context) {
+        this.context = context;
+    }
 
     /**
      * Register an observer EventListener with the current context (provided).

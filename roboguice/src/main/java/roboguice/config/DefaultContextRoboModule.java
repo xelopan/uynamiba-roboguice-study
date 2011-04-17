@@ -4,6 +4,9 @@ import roboguice.event.EventManager;
 import roboguice.event.ObservesTypeListener;
 import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
 import roboguice.inject.*;
+import roboguice.util.Ln;
+import roboguice.util.RoboAsyncTask;
+import roboguice.util.RoboThread;
 
 import android.app.Application;
 import android.content.ContentResolver;
@@ -11,6 +14,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Handler;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
@@ -36,11 +40,11 @@ public class DefaultContextRoboModule extends AbstractModule {
         contextScope = new ContextScope();
         viewListener = new ViewListener(context, contextScope);
         resourceListener = new ResourceListener((Application)context.getApplicationContext());
-        eventManager = new EventManager();
+        eventManager = new EventManager(context);
 
         //final ExtrasListener extrasListener = new ExtrasListener(context);
         final PreferenceListener preferenceListener = new PreferenceListener(context,contextScope);
-        final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator();
+        final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator(getProvider(Handler.class));
 
 
 
@@ -61,12 +65,9 @@ public class DefaultContextRoboModule extends AbstractModule {
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
 
 
-        requestInjection(observerThreadingDecorator);
-        requestInjection(eventManager);
 
-
-        //requestStaticInjection(Ln.class);
-        //requestStaticInjection(RoboThread.class);
-        //requestStaticInjection(RoboAsyncTask.class);
+        requestStaticInjection(Ln.class);
+        requestStaticInjection(RoboThread.class);
+        requestStaticInjection(RoboAsyncTask.class);
     }
 }

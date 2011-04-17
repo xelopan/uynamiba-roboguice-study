@@ -7,15 +7,21 @@ import roboguice.event.eventListener.UIThreadEventListenerDecorator;
 
 import android.os.Handler;
 
-import com.google.inject.Inject;
 import com.google.inject.Provider;
+
+import javax.inject.Inject;
 
 /**
  * @author John Ericksen
  */
 public class EventListenerThreadingDecorator {
 
-    @Inject protected Provider<Handler> handlerProvider;
+    protected Provider<Handler> handlerProvider;
+
+    @Inject
+    public EventListenerThreadingDecorator( Provider<Handler> handlerProvider) {
+        this.handlerProvider = handlerProvider;
+    }
 
     public <T> EventListener<T> decorate(EventThread threadType, EventListener<T> eventListener){
         switch (threadType){
