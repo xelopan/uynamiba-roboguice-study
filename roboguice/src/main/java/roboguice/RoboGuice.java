@@ -3,7 +3,6 @@ package roboguice;
 import roboguice.config.AbstractRoboModule;
 import roboguice.config.DefaultApplicationRoboModule;
 import roboguice.config.DefaultContextRoboModule;
-import roboguice.util.Strings;
 
 import android.app.Application;
 import android.content.Context;
@@ -19,8 +18,7 @@ import java.util.WeakHashMap;
 
 public class RoboGuice {
     protected static WeakHashMap<Context,Injector> injectors = new WeakHashMap<Context,Injector>();
-    protected static Injector rootInjector;
-    protected static StackTraceElement[] rootInjectorStackTrace;
+    protected static WeakHashMap<Application,Injector> rootInjectors = new WeakHashMap<Application, Injector>();
     protected static Stage DEFAULT_STAGE = Stage.PRODUCTION;
 
 
@@ -33,6 +31,7 @@ public class RoboGuice {
      * Return the cached Injector instance for this application, or create a new one if necessary.
      */
     public static Injector getRootInjector(Application application) {
+        final Injector rootInjector = rootInjectors.get(application);
         return rootInjector!=null ? rootInjector : createAndBindNewRootInjector(DEFAULT_STAGE, application);
     }
 
@@ -90,15 +89,17 @@ public class RoboGuice {
      */
     public static Injector createAndBindNewRootInjector(Stage stage, Application application) {
 
+        Injector rootInjector = rootInjectors.get(application);
         if( rootInjector!=null )
-            throw new UnsupportedOperationException("An injector was already associated with " + application + " here:\n" + Strings.join("\n\tat ",rootInjectorStackTrace) + "\n\nCause:" );
+            throw new UnsupportedOperationException("An injector was already associated with " + application );
 
         synchronized (RoboGuice.class) {
+            rootInjector = rootInjectors.get(application);
             if( rootInjector!=null )
                 return rootInjector;
 
             rootInjector = createAndBindNewRootInjector(application, stage, new DefaultApplicationRoboModule(application));
-
+            rootInjectors.put(application,rootInjector);
         }
 
         return rootInjector;
@@ -127,21 +128,17 @@ public class RoboGuice {
      */
     public static Injector createAndBindNewRootInjector(Application application, Stage stage, Module... modules) {
 
+        Injector rootInjector = rootInjectors.get(application);
         if( rootInjector!=null )
-            throw new UnsupportedOperationException("An injector was already associated with " + application + " here:\n" + Strings.join("\n\tat ",rootInjectorStackTrace) + "\n\nCause:" );
+            throw new UnsupportedOperationException("An injector was already associated with " + application );
 
         synchronized (RoboGuice.class) {
+            rootInjector = rootInjectors.get(application);
             if( rootInjector!=null )
                 return rootInjector;
 
             rootInjector = Guice.createInjector(stage, modules);
-
-            try {
-                throw new Exception();
-            } catch( Exception e ) {
-                rootInjectorStackTrace = e.getStackTrace();
-            }
-
+            rootInjectors.put(application,rootInjector);
         }
 
         return rootInjector;
