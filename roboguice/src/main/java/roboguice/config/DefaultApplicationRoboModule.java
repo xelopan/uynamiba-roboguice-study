@@ -51,8 +51,10 @@ public class DefaultApplicationRoboModule extends AbstractModule {
 
         // Package Info
         try {
-            final PackageInfo info = application.getPackageManager().getPackageInfo(application.getPackageName(),0);
-            bind(PackageInfo.class).toInstance(info);
+            final PackageManager packageManager = application.getPackageManager(); // can be null in robolectric
+            if( packageManager!=null )
+                bind(PackageInfo.class).toInstance(packageManager.getPackageInfo(application.getPackageName(),0));
+            
         } catch( PackageManager.NameNotFoundException e ) {
             throw new RuntimeException(e);
         }

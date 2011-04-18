@@ -2,10 +2,7 @@ package roboguice.activity;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
 import roboguice.config.DefaultApplicationRoboModule;
@@ -39,12 +36,19 @@ public class ActivityInjectionTest {
 
     @BeforeClass
     public static void setupClass() {
+        // Because we mess with the root injector
         Robolectric.resetStaticState();
-        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyAbstractModule(Robolectric.application));
+    }
+
+    @After
+    public void tearDownClass() {
+        // Because we messed with the root injector
+        Robolectric.resetStaticState();
     }
 
     @Before
     public void setup() {
+        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyAbstractModule(Robolectric.application));
         activity = new DummyActivity();
         activity.setIntent(new Intent(Robolectric.application, DummyActivity.class).putExtra("foobar", "goober").putExtra("json", "{ 'x':'y'}"));
         activity.onCreate(null);

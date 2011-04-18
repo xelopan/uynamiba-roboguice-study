@@ -123,7 +123,7 @@ public class ExtrasListener implements TypeListener {
         protected Object convert(Field field, Object value) {
 
             // Don't try to convert null or primitives
-            if (value == null || field.getType().isPrimitive())
+            if (value == null || field.getType().isPrimitive() || value.getClass().equals(field.getType()))
                 return value;
 
 
