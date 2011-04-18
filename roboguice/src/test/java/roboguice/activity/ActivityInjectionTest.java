@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.TypeLiteral;
 
@@ -48,9 +49,10 @@ public class ActivityInjectionTest {
 
     @Before
     public void setup() {
-        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyAbstractModule(Robolectric.application));
+        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyApplicationModule(Robolectric.application));
         activity = new DummyActivity();
         activity.setIntent(new Intent(Robolectric.application, DummyActivity.class).putExtra("foobar", "goober").putExtra("json", "{ 'x':'y'}"));
+        RoboGuice.createAndBindNewContextInjector(activity, new MyContextModule());
         activity.onCreate(null);
 
         prefsActivity = new DummyPreferenceActivity();
@@ -154,9 +156,9 @@ public class ActivityInjectionTest {
         @InjectExtra("foobar") protected String foobar;
     }
 
-    public static class MyAbstractModule extends DefaultApplicationRoboModule {
+    public static class MyApplicationModule extends DefaultApplicationRoboModule {
 
-        public MyAbstractModule(Application application) {
+        public MyApplicationModule(Application application) {
             super(application);
         }
 
@@ -164,13 +166,20 @@ public class ActivityInjectionTest {
         protected void configure() {
             super.configure();
             
-            bind(SomeDumbObject.class);
             bind(new TypeLiteral<ExtraConverter<String,JsonObject>>(){}).toInstance(new ExtraConverter<String, JsonObject>() {
                 @Override
                 public JsonObject convert(String s) {
                     return new JsonParser().parse(s).getAsJsonObject();
                 }
             });
+        }
+    }
+
+    public static class MyContextModule extends AbstractModule {
+
+        @Override
+        protected void configure() {
+            bind(SomeDumbObject.class);
         }
     }
 }
