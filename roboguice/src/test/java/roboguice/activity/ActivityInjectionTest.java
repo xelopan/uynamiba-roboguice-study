@@ -3,13 +3,16 @@ package roboguice.activity;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
+import roboguice.config.DefaultApplicationRoboModule;
 import roboguice.inject.*;
 
 import android.R;
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -19,7 +22,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.TypeLiteral;
 
@@ -34,12 +36,17 @@ public class ActivityInjectionTest {
 
     protected DummyActivity activity;
     protected DummyPreferenceActivity prefsActivity;
-    
+
+    @BeforeClass
+    public static void setupClass() {
+        Robolectric.resetStaticState();
+        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyAbstractModule(Robolectric.application));
+    }
+
     @Before
     public void setup() {
         activity = new DummyActivity();
-        activity.setIntent( new Intent(Robolectric.application,DummyActivity.class).putExtra("foobar","goober").putExtra("json","{ 'x':'y'}") );
-        RoboGuice.createAndBindNewContextInjector(activity, new MyAbstractModule());
+        activity.setIntent(new Intent(Robolectric.application, DummyActivity.class).putExtra("foobar", "goober").putExtra("json", "{ 'x':'y'}"));
         activity.onCreate(null);
 
         prefsActivity = new DummyPreferenceActivity();
@@ -143,9 +150,16 @@ public class ActivityInjectionTest {
         @InjectExtra("foobar") protected String foobar;
     }
 
-    public static class MyAbstractModule extends AbstractModule {
+    public static class MyAbstractModule extends DefaultApplicationRoboModule {
+
+        public MyAbstractModule(Application application) {
+            super(application);
+        }
+
         @Override
         protected void configure() {
+            super.configure();
+            
             bind(SomeDumbObject.class);
             bind(new TypeLiteral<ExtraConverter<String,JsonObject>>(){}).toInstance(new ExtraConverter<String, JsonObject>() {
                 @Override

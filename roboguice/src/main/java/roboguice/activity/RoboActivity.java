@@ -65,11 +65,12 @@ import javax.inject.Inject;
 public class RoboActivity extends Activity {
     @Inject protected EventManager eventManager;
     @Inject protected ViewListener viewListener;
+    //@Inject protected ExtrasListener ignored; // force construction early
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this).injectMembers(this);
         super.onCreate(savedInstanceState);
+        RoboGuice.getInjector(this);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
 

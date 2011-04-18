@@ -15,7 +15,10 @@
  */
 package roboguice.inject;
 
+import roboguice.RoboGuice;
+
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,7 +29,6 @@ import com.google.inject.spi.TypeListener;
 import com.google.inject.util.Types;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -35,16 +37,15 @@ import java.util.Map;
  * @author Pierre-Yves Ricau (py.ricau+roboguice@gmail.com)
  */
 public class ExtrasListener implements TypeListener {
-    @Inject protected Injector injector;
-
-    protected ArrayList<Runnable> queue = new ArrayList<Runnable>();
     protected Context context;
 
-    public ExtrasListener(Context context ) {
+    public ExtrasListener(Context context) {
         this.context = context;
     }
 
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
+        if( !(context instanceof Activity))
+            return;
 
         for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
             for (Field field : c.getDeclaredFields())
@@ -53,12 +54,6 @@ public class ExtrasListener implements TypeListener {
 
 
     }
-
-    public void injectExtras() {
-        for (int i = queue.size() - 1; i >= 0; --i)
-            queue.remove(i).run();
-    }
-
 
 
 
@@ -74,79 +69,53 @@ public class ExtrasListener implements TypeListener {
         }
 
         public void injectMembers(T instance) {
-            final Runnable r = new DoInjection(instance);
-            
-            if( injector==null )
-                queue.add( r );
 
-            else
-                r.run();
-        }
+            final Activity activity = (Activity) context;
+            final String id = annotation.value();
+            final Intent intent = activity.getIntent();
 
+            if(intent==null)
+                return;
 
-        public class DoInjection<T> implements Runnable {
-            protected T instance;
+            final Bundle extras = intent.getExtras();
 
-            public DoInjection( T instance ) {
-                this.instance = instance;
+            if (extras == null || !extras.containsKey(id)) {
+                // If no extra found and the extra injection is optional, no
+                // injection happens.
+                if (annotation.optional())
+                    return;
+                
+                throw new IllegalStateException(String.format("Can't find the mandatory extra identified by key [%s] on field %s.%s", id, field.getDeclaringClass(), field.getName()));
             }
 
-            public void run() {
+            final Object value = convert(field, extras.get(id));
 
-                if (!(context instanceof Activity))
-                    return;
+            /*
+             * Please notice : null checking is done AFTER conversion. Having
+             *
+             * @Nullable on a field means "the injected value might be null", ie
+             * "the converted value might be null". Which also means that if you
+             * don't use @Nullable and a converter returns null, an exception will
+             * be thrown (which I find to be the most logic behavior).
+             */
+            if (value == null && Nullable.notNullable(field) )
+                throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));
 
 
-                final Activity activity = (Activity) context;
-                final String id = annotation.value();
-                final Intent intent = activity.getIntent();
+            field.setAccessible(true);
+            try {
 
-                if(intent==null)
-                    return;
+                field.set(instance, value);
 
-                final Bundle extras = intent.getExtras();
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
 
-                if (extras == null || !extras.containsKey(id)) {
-                    // If no extra found and the extra injection is optional, no
-                    // injection happens.
-                    if (annotation.optional()) {
-                        return;
-                    } else {
-                        throw new IllegalStateException(String.format("Can't find the mandatory extra identified by key [%s] on field %s.%s", id, field
-                                .getDeclaringClass(), field.getName()));
-                    }
-                }
-
-                final Object value = convert(field, extras.get(id));
-
-                /*
-                 * Please notice : null checking is done AFTER conversion. Having
-                 *
-                 * @Nullable on a field means "the injected value might be null", ie
-                 * "the converted value might be null". Which also means that if you
-                 * don't use @Nullable and a converter returns null, an exception will
-                 * be thrown (which I find to be the most logic behavior).
-                 */
-                if (value == null && Nullable.notNullable(field) ) {
-                    throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field
-                            .getName()));
-                }
-
-                field.setAccessible(true);
-                try {
-
-                    field.set(instance, value);
-
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-
-                } catch (IllegalArgumentException f) {
-                    throw new IllegalArgumentException(String.format("Can't assign %s value %s to %s field %s", value != null ? value.getClass() : "(null)", value,
-                            field.getType(), field.getName()));
-                }
+            } catch (IllegalArgumentException f) {
+                throw new IllegalArgumentException(String.format("Can't assign %s value %s to %s field %s", value != null ? value.getClass() : "(null)", value,
+                        field.getType(), field.getName()));
             }
-
         }
+
 
 
 
@@ -166,12 +135,12 @@ public class ExtrasListener implements TypeListener {
             // Getting bindings map to check if a binding exists
             // We DO NOT currently check for injector's parent bindings. Should we ?
             //final Injector injector = injectorProvider.get();
+            final Injector injector = RoboGuice.getRootInjector((Application)context.getApplicationContext());
             final Map<Key<?>, Binding<?>> bindings = injector.getBindings();
 
-            if (bindings.containsKey(key)) {
-                final ExtraConverter converter = (ExtraConverter) injector.getInstance(key);
-                value = converter.convert(value);
-            }
+            if (bindings.containsKey(key))
+                value = ((ExtraConverter) injector.getInstance(key)).convert(value);
+            
 
             return value;
 
