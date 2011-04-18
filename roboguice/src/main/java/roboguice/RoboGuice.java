@@ -3,6 +3,7 @@ package roboguice;
 import roboguice.config.AbstractRoboModule;
 import roboguice.config.DefaultApplicationRoboModule;
 import roboguice.config.DefaultContextRoboModule;
+import roboguice.util.Strings;
 
 import android.app.Application;
 import android.content.Context;
@@ -19,7 +20,9 @@ import java.util.WeakHashMap;
 public class RoboGuice {
     protected static WeakHashMap<Context,Injector> injectors = new WeakHashMap<Context,Injector>();
     protected static Injector rootInjector;
+    protected static StackTraceElement[] rootInjectorStackTrace;
     protected static Stage DEFAULT_STAGE = Stage.PRODUCTION;
+
 
     private RoboGuice() {
     }
@@ -88,7 +91,7 @@ public class RoboGuice {
     public static Injector createAndBindNewRootInjector(Stage stage, Application application) {
 
         if( rootInjector!=null )
-            throw new UnsupportedOperationException("An injector was already associated with " + application);
+            throw new UnsupportedOperationException("An injector was already associated with " + application + " here:\n" + Strings.join("\n\tat ",rootInjectorStackTrace) + "\n\nCause:" );
 
         synchronized (RoboGuice.class) {
             if( rootInjector!=null )
@@ -125,13 +128,19 @@ public class RoboGuice {
     public static Injector createAndBindNewRootInjector(Application application, Stage stage, Module... modules) {
 
         if( rootInjector!=null )
-            throw new UnsupportedOperationException("An injector was already associated with " + application);
+            throw new UnsupportedOperationException("An injector was already associated with " + application + " here:\n" + Strings.join("\n\tat ",rootInjectorStackTrace) + "\n\nCause:" );
 
         synchronized (RoboGuice.class) {
             if( rootInjector!=null )
                 return rootInjector;
 
             rootInjector = Guice.createInjector(stage, modules);
+
+            try {
+                throw new Exception();
+            } catch( Exception e ) {
+                rootInjectorStackTrace = e.getStackTrace();
+            }
 
         }
 

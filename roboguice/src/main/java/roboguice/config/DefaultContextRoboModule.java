@@ -17,11 +17,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
-import com.google.inject.spi.InjectionListener;
-import com.google.inject.spi.TypeEncounter;
-import com.google.inject.spi.TypeListener;
 
 /**
  * BUG move activity-related bindings to activity module
@@ -65,7 +61,6 @@ public class DefaultContextRoboModule extends AbstractModule {
         
 
         // Android Resources, Views and extras require special handling
-        bindListener(Matchers.identicalTo(extrasListener), new ExtrasListenerListener());
         bindListener(Matchers.any(), resourceListener);
         bindListener(Matchers.any(), extrasListener);
         bindListener(Matchers.any(), viewListener);
@@ -81,19 +76,3 @@ public class DefaultContextRoboModule extends AbstractModule {
 }
 
 
-/**
- * Trick to force us to wait to do injection until the injector is actually available
- * but hopefully still before other classes that depend on InjectExtra annotations are injected
- */
-class ExtrasListenerListener implements TypeListener {
-    @Override
-    public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-        if( typeLiteral.getRawType().equals(ExtrasListener.class))
-            typeEncounter.register( (InjectionListener<I>) new InjectionListener<ExtrasListener>() {
-                @Override
-                public void afterInjection(ExtrasListener injectee) {
-                    injectee.injectExtras();
-                }
-            });
-    }
-}
