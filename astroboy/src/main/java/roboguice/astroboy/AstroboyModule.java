@@ -15,19 +15,13 @@
  */
 package roboguice.astroboy;
 
-import roboguice.astroboy.bean.*;
+import roboguice.astroboy.bean.Person;
+import roboguice.astroboy.bean.PersonFromNameExtraProvider;
 import roboguice.astroboy.service.TalkingThing;
 import roboguice.astroboy.service.TalkingThingMockImpl;
 import roboguice.config.DefaultContextRoboModule;
-import roboguice.inject.ExtraConverter;
-import roboguice.inject.SharedPreferencesName;
 
 import android.content.Context;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
-
-import java.util.Date;
 
 public class AstroboyModule extends DefaultContextRoboModule {
 
@@ -44,6 +38,10 @@ public class AstroboyModule extends DefaultContextRoboModule {
          */
         bind(TalkingThing.class).to(TalkingThingMockImpl.class);
         bind(Person.class).toProvider(PersonFromNameExtraProvider.class);
+
+        // Required to keep this provider from being promoted to the root injector, where it won't have access to
+        // extra injection yet.
+        bind(PersonFromNameExtraProvider.class);
 
     }
 }
