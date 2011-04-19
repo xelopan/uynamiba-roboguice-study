@@ -137,6 +137,8 @@ public class DoctorTenma extends RoboActivity {
             }
         });
 
+        // BUG these assertions should generally be moved to roboguice testcases now that we have
+        // tests that can be run during the build
         assertEquals(prefs.getString("dummyPref", "la la la"), "la la la");
         assertEquals(myDateExtra, new Date(0));
 
