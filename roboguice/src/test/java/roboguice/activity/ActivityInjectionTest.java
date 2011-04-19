@@ -39,6 +39,7 @@ public class ActivityInjectionTest {
     @BeforeClass
     public static void setupClass() {
         // Because we mess with the root injector
+        // BUG should consider a way to reset RoboGuice instead of Robolectric, since it's not really robolectric's fault that we have to do this
         Robolectric.resetStaticState();
     }
 
