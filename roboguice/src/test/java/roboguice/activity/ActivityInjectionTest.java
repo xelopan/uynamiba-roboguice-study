@@ -76,7 +76,6 @@ public class ActivityInjectionTest {
     }
 
     @Test
-    @Ignore
     public void shouldInjectStaticStringResource() {
         assertThat(activity.staticCancel,is("Cancel"));
     }
