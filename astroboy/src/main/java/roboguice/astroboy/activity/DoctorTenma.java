@@ -141,12 +141,12 @@ public class DoctorTenma extends RoboActivity {
         assertEquals(myDateExtra, new Date(0));
 
         assertNull(nullInjectedMember);
-        assertEquals(nameExtra, "Atom");
-        assertEquals(personFromExtra.getName(), "Atom");
-        assertEquals(personFromExtra.getAge().getTime(), 3000L);
-        assertEquals(personFromConvertedExtra.getName(), "Atom");
-        assertEquals(dateFromTimestampExtra.getTime(), 1000L);
-        assertEquals(dateFromTimestampTwiceExtra.getTime(), 2000L);
+        assertEquals("Atom", nameExtra);
+        assertEquals("Atom", personFromExtra.getName());
+        assertEquals(3000L, personFromExtra.getAge().getTime());
+        assertEquals("Atom", personFromConvertedExtra.getName());
+        assertEquals(1000L, dateFromTimestampExtra.getTime());
+        assertEquals(2000L, dateFromTimestampTwiceExtra.getTime());
 
         Ln.d(talker.talk());
 
