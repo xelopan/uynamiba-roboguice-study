@@ -44,8 +44,7 @@ public abstract class RoboMapActivity extends MapActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = RoboGuice.getInjector(this);
-        injector.injectMembers(this);
+        RoboGuice.getInjector(this);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }

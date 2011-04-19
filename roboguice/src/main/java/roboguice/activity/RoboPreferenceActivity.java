@@ -53,8 +53,8 @@ public abstract class RoboPreferenceActivity extends PreferenceActivity {
     /** {@inheritDoc } */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         RoboGuice.getInjector(this);
+        super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
 
