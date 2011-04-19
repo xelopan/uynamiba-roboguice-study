@@ -2,7 +2,6 @@ package roboguice.astroboy.activity;
 
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,7 +17,6 @@ public class DoctorTenmaTest {
     }
 
     @Test
-    @Ignore
     public void inProgress() {
         
     }
