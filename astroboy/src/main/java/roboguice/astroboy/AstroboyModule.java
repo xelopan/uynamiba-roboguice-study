@@ -45,7 +45,5 @@ public class AstroboyModule extends DefaultContextRoboModule {
         bind(TalkingThing.class).to(TalkingThingMockImpl.class);
         bind(Person.class).toProvider(PersonFromNameExtraProvider.class);
 
-        // BUG need a better way to set default preferences context
-        bindConstant().annotatedWith(SharedPreferencesName.class).to("roboguice.astroboy");
     }
 }

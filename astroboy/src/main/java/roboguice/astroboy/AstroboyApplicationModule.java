@@ -6,6 +6,7 @@ import roboguice.astroboy.bean.Person;
 import roboguice.astroboy.bean.PersonExtraConverter;
 import roboguice.config.DefaultApplicationRoboModule;
 import roboguice.inject.ExtraConverter;
+import roboguice.inject.SharedPreferencesName;
 
 import android.app.Application;
 
@@ -27,5 +28,7 @@ public class AstroboyApplicationModule extends DefaultApplicationRoboModule {
         bind(new TypeLiteral<ExtraConverter<Long, Date>>(){}).to(DateExtraConverter.class);
         bind(new TypeLiteral<ExtraConverter<Integer, Date>>(){}).to(DateTwiceExtraConverter.class);
 
+        // BUG need a better way to set default preferences context
+        bindConstant().annotatedWith(SharedPreferencesName.class).to("roboguice.astroboy");
     }
 }
