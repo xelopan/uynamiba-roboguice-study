@@ -19,7 +19,6 @@ import java.util.WeakHashMap;
 
 public class RoboGuice {
     protected static WeakHashMap<Context,Injector> injectors = new WeakHashMap<Context,Injector>();
-    protected static WeakHashMap<Application,Injector> rootInjectors = new WeakHashMap<Application, Injector>();
     protected static Stage DEFAULT_STAGE = Stage.PRODUCTION;
 
     private RoboGuice() {
@@ -31,8 +30,8 @@ public class RoboGuice {
      * Return the cached Injector instance for this application, or create a new one if necessary.
      */
     public static Injector getRootInjector(Application application) {
-        final Injector rootInjector = rootInjectors.get(application);
-        return rootInjector!=null ? rootInjector : createAndBindNewRootInjector(DEFAULT_STAGE, application);
+        final Injector injector = injectors.get(application);
+        return injector!=null ? injector : createAndBindNewRootInjector(DEFAULT_STAGE, application);
     }
 
     /**
@@ -83,21 +82,21 @@ public class RoboGuice {
      */
     public static Injector createAndBindNewRootInjector(Stage stage, Application application, ApplicationModule... modules) {
 
-        Injector rootInjector = rootInjectors.get(application);
-        if( rootInjector!=null )
+        Injector injector = injectors.get(application);
+        if( injector!=null )
             throw new UnsupportedOperationException("An injector was already associated with " + application );
 
         synchronized (RoboGuice.class) {
-            rootInjector = rootInjectors.get(application);
-            if( rootInjector!=null )
-                return rootInjector;
+            injector = injectors.get(application);
+            if( injector!=null )
+                return injector;
 
 
-            rootInjector = Guice.createInjector(stage, createApplicationModuleList(application,modules));
-            rootInjectors.put(application,rootInjector);
+            injector = Guice.createInjector(stage, createApplicationModuleList(application,modules));
+            injectors.put(application,injector);
         }
 
-        return rootInjector;
+        return injector;
     }
 
 
@@ -173,7 +172,6 @@ public class RoboGuice {
          * testcases that share the same application.
          */
         public static void clearAllInjectors() {
-            rootInjectors.clear();
             injectors.clear();
         }
 
