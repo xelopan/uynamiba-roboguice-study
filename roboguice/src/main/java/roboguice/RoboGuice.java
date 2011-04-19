@@ -165,4 +165,19 @@ public class RoboGuice {
     }
 
 
+    public static class util {
+        private util() {}
+
+        /**
+         * Clear all of RoboGuice's cached injectors.  Designed to be used when working with multiple
+         * testcases that share the same application.
+         */
+        public static void clearAllInjectors() {
+            rootInjectors.clear();
+            injectors.clear();
+        }
+
+    }
+
+
 }
