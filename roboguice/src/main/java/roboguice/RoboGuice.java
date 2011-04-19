@@ -1,6 +1,6 @@
 package roboguice;
 
-import roboguice.config.AbstractRoboModule;
+import roboguice.config.ApplicationModule;
 import roboguice.config.DefaultApplicationRoboModule;
 import roboguice.config.DefaultContextRoboModule;
 
@@ -12,6 +12,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.WeakHashMap;
@@ -20,7 +21,6 @@ public class RoboGuice {
     protected static WeakHashMap<Context,Injector> injectors = new WeakHashMap<Context,Injector>();
     protected static WeakHashMap<Application,Injector> rootInjectors = new WeakHashMap<Application, Injector>();
     protected static Stage DEFAULT_STAGE = Stage.PRODUCTION;
-
 
     private RoboGuice() {
     }
@@ -53,24 +53,7 @@ public class RoboGuice {
             if( rtrn!=null )
                 return rtrn;
 
-            final int id = context.getResources().getIdentifier("roboguice_modules", "array", context.getPackageName());
-            final String[] moduleNames = id>0 ? context.getResources().getStringArray(id) : new String[]{};
-            final ArrayList<Module> m = new ArrayList<Module>();
-            final DefaultContextRoboModule contextRoboModule = new DefaultContextRoboModule(context);
-            m.add( contextRoboModule );
-            m.addAll(Arrays.asList(modules));
-
-
-            try {
-                for (String name : moduleNames) {
-                    final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
-                    m.add( AbstractRoboModule.class.isAssignableFrom(clazz) ? clazz.getConstructor(DefaultContextRoboModule.class).newInstance(contextRoboModule) : clazz.newInstance() );
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            rtrn = getRootInjector((Application) context.getApplicationContext()).createChildInjector(m);
+            rtrn = getRootInjector((Application) context.getApplicationContext()).createChildInjector( createContextModuleList(context,modules) );
             injectors.put(context, rtrn);
 
         }
@@ -78,7 +61,6 @@ public class RoboGuice {
         return rtrn;
     }
 
-
     /**
      * Creates a new injector and associates it with the specified application.  It is an error to
      * create multiple injectors for a single application.
@@ -87,35 +69,8 @@ public class RoboGuice {
      *
      * @throws UnsupportedOperationException if an injector was already associated with this application
      */
-    public static Injector createAndBindNewRootInjector(Stage stage, Application application) {
-
-        Injector rootInjector = rootInjectors.get(application);
-        if( rootInjector!=null )
-            throw new UnsupportedOperationException("An injector was already associated with " + application );
-
-        synchronized (RoboGuice.class) {
-            rootInjector = rootInjectors.get(application);
-            if( rootInjector!=null )
-                return rootInjector;
-
-            rootInjector = createAndBindNewRootInjector(application, stage, new DefaultApplicationRoboModule(application));
-            rootInjectors.put(application,rootInjector);
-        }
-
-        return rootInjector;
-    }
-
-
-    /**
-     * Creates a new injector and associates it with the specified application.  It is an error to
-     * create multiple injectors for a single application.
-     *
-     * Generally, you should prefer #getRootInjector unless you specifically need this funcionality
-     *
-     * @throws UnsupportedOperationException if an injector was already associated with this application
-     */
-    public static Injector createAndBindNewRootInjector(Application application, Module... modules) {
-        return createAndBindNewRootInjector(application, DEFAULT_STAGE, modules);
+    public static Injector createAndBindNewRootInjector(Application application, ApplicationModule... modules) {
+        return createAndBindNewRootInjector(DEFAULT_STAGE, application, modules);
     }
 
     /**
@@ -126,7 +81,7 @@ public class RoboGuice {
      *
      * @throws UnsupportedOperationException if an injector was already associated with this application
      */
-    public static Injector createAndBindNewRootInjector(Application application, Stage stage, Module... modules) {
+    public static Injector createAndBindNewRootInjector(Stage stage, Application application, ApplicationModule... modules) {
 
         Injector rootInjector = rootInjectors.get(application);
         if( rootInjector!=null )
@@ -137,11 +92,76 @@ public class RoboGuice {
             if( rootInjector!=null )
                 return rootInjector;
 
-            rootInjector = Guice.createInjector(stage, modules);
+
+            rootInjector = Guice.createInjector(stage, createApplicationModuleList(application,modules));
             rootInjectors.put(application,rootInjector);
         }
 
         return rootInjector;
+    }
+
+
+    protected static ArrayList<Module> createContextModuleList( Context context, Module... modules ) {
+
+        // BUG should cache this
+        final int id = context.getResources().getIdentifier("roboguice_modules", "array", context.getPackageName());
+        final String[] moduleNames = id>0 ? context.getResources().getStringArray(id) : new String[]{};
+        final ArrayList<Module> m = new ArrayList<Module>(Arrays.asList(modules));
+
+        try {
+            for (String name : moduleNames) {
+                final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
+
+                // Application modules go in the root injector, context modules go in the child injector
+                if( !ApplicationModule.class.isAssignableFrom(clazz)) {
+                    Constructor<? extends Module> c = null;
+                    try {
+                         c = clazz.getConstructor(Context.class);
+                    } catch( NoSuchMethodException ignored) {
+                    }
+                    m.add( c!=null ? c.newInstance(context) : clazz.newInstance() );
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if( m.size()==0 )
+            m.add( new DefaultContextRoboModule(context) );
+
+        return m;
+    }
+
+    protected static ArrayList<ApplicationModule> createApplicationModuleList( Application application, ApplicationModule... modules ) {
+
+        // BUG should cache this
+        final int id = application.getResources().getIdentifier("roboguice_modules", "array", application.getPackageName());
+        final String[] moduleNames = id>0 ? application.getResources().getStringArray(id) : new String[]{};
+        final ArrayList<ApplicationModule> m = new ArrayList<ApplicationModule>(Arrays.asList(modules));
+
+        try {
+            for (String name : moduleNames) {
+                final Class<? extends Module> clazz = Class.forName(name).asSubclass(Module.class);
+
+                // Application modules go in the root injector, context modules go in the child injector
+                if( ApplicationModule.class.isAssignableFrom(clazz)) {
+                    Constructor<? extends Module> c = null;
+                    try {
+                        c = clazz.getConstructor(Application.class);
+                    } catch( NoSuchMethodException ignored) {
+                    }
+
+                    m.add( (ApplicationModule) (c!=null ? c.newInstance(application) : clazz.newInstance()) );
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if( m.size()==0 )
+            m.add( new DefaultApplicationRoboModule(application));
+
+        return m;
     }
 
 

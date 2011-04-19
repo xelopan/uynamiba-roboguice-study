@@ -17,7 +17,6 @@ package roboguice.astroboy.activity;
 
 import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
-import roboguice.astroboy.AstroboyModule;
 import roboguice.astroboy.R;
 import roboguice.astroboy.bean.*;
 import roboguice.astroboy.service.ExampleObserver;
@@ -84,7 +83,7 @@ public class DoctorTenma extends RoboActivity {
      * This example shows how to inject a bean converted from an extra value
      * using a provider. The String extra is converted into a Person. See
      * {@link PersonFromNameExtraProvider} to see how a Person is created. A
-     * binding is actually done in {@link AstroboyModule}.<br />
+     * binding is actually done in {@link roboguice.astroboy.AstroboyModule}.<br />
      * <br />
      * The extra key is defined in the provider. This is useful if you want to
      * inject a bean created from multiple extra values (e.g. creating a person
@@ -95,7 +94,7 @@ public class DoctorTenma extends RoboActivity {
     /**
      * This is a more flexible way to inject a bean : a converter is configured
      * and bound, and RoboGuice uses this converter to create a Person from a
-     * String extra. See {@link PersonExtraConverter} and {@link AstroboyModule}
+     * String extra. See {@link PersonExtraConverter} and {@link roboguice.astroboy.AstroboyModule}
      * .
      */
     @InjectExtra("nameExtra") protected Person personFromConvertedExtra;
