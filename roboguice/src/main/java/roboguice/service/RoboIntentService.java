@@ -48,7 +48,7 @@ public abstract class RoboIntentService extends IntentService {
 
     @Override
     public void onCreate() {
-        RoboGuice.getInjector(this).injectMembers(this);
+        RoboGuice.getInjector(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
     }

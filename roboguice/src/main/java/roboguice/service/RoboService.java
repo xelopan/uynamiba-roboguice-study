@@ -53,7 +53,7 @@ public abstract class RoboService extends Service {
 
     @Override
     public void onCreate() {
-        RoboGuice.getInjector(this).injectMembers(this);
+        RoboGuice.getInjector(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
     }

@@ -10,7 +10,7 @@ public abstract class RoboBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public final void onReceive(Context context, Intent intent) {
-        RoboGuice.getInjector(context).injectMembers(this);
+        RoboGuice.getInjector(context);
     }
 
 }
