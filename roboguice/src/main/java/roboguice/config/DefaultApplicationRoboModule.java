@@ -29,7 +29,7 @@ import com.google.inject.name.Names;
  *
  * @author Mike Burton
  */
-public class DefaultApplicationRoboModule extends AbstractModule {
+public class DefaultApplicationRoboModule extends AbstractModule implements ApplicationModule {
 
     protected Application application;
 

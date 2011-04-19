@@ -6,10 +6,12 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
 import roboguice.config.DefaultApplicationRoboModule;
+import roboguice.config.DefaultContextRoboModule;
 import roboguice.inject.*;
 
 import android.R;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -19,7 +21,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.TypeLiteral;
 
@@ -52,7 +53,7 @@ public class ActivityInjectionTest {
         RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyApplicationModule(Robolectric.application));
         activity = new DummyActivity();
         activity.setIntent(new Intent(Robolectric.application, DummyActivity.class).putExtra("foobar", "goober").putExtra("json", "{ 'x':'y'}"));
-        RoboGuice.createAndBindNewContextInjector(activity, new MyContextModule());
+        RoboGuice.createAndBindNewContextInjector(activity, new MyContextModule(activity));
         activity.onCreate(null);
 
         prefsActivity = new DummyPreferenceActivity();
@@ -175,10 +176,16 @@ public class ActivityInjectionTest {
         }
     }
 
-    public static class MyContextModule extends AbstractModule {
+    public static class MyContextModule extends DefaultContextRoboModule {
+
+        public MyContextModule(Context context) {
+            super(context);
+        }
 
         @Override
         protected void configure() {
+            super.configure();
+            
             bind(SomeDumbObject.class);
         }
     }

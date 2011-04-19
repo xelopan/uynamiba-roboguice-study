@@ -1,17 +1,16 @@
 package roboguice.event;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
+import roboguice.config.DefaultContextRoboModule;
 
-import android.app.Application;
+import android.app.Activity;
+import android.content.Context;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -25,23 +24,14 @@ import java.util.List;
 public class ObservesTypeListenerTest {
 
     protected EventManager eventManager;
-    protected Application app;
     protected Injector injector;
     protected List<Method> eventOneMethods;
     protected List<Method> eventTwoMethods;
 
     @Before
     public void setup() throws NoSuchMethodException {
-        app = Robolectric.application;
-        injector = RoboGuice.createAndBindNewContextInjector(new DummyActivity(), new AbstractModule() {
-            @Override
-            protected void configure() {
-                // BUG it's necessary when using child injectors to explicitly bind Just-In-Time bindings
-                // in order to force them to stay on the child injector instead of the parent.  If they
-                // go to the parent, the event listeners dont' get run :(
-                bind(ContextObserverTesterImpl.class);
-            }
-        } );
+        final Activity activity = new DummyActivity();
+        injector = RoboGuice.createAndBindNewContextInjector(new DummyActivity(), new MyContextModule(activity));
 
         eventManager = injector.getInstance(EventManager.class);
 
@@ -76,5 +66,23 @@ public class ObservesTypeListenerTest {
 
     public static class DummyActivity extends RoboActivity {
 
+    }
+
+
+
+    public static class MyContextModule extends DefaultContextRoboModule {
+        public MyContextModule(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void configure() {
+            super.configure();
+
+            // BUG it's necessary when using child injectors to explicitly bind Just-In-Time bindings
+            // in order to force them to stay on the child injector instead of the parent.  If they
+            // go to the parent, the event listeners dont' get run :(
+            bind(ContextObserverTesterImpl.class);
+        }
     }
 }

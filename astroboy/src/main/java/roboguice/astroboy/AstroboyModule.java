@@ -18,22 +18,27 @@ package roboguice.astroboy;
 import roboguice.astroboy.bean.*;
 import roboguice.astroboy.service.TalkingThing;
 import roboguice.astroboy.service.TalkingThingMockImpl;
-import roboguice.config.AbstractRoboModule;
 import roboguice.config.DefaultContextRoboModule;
 import roboguice.inject.ExtraConverter;
 import roboguice.inject.SharedPreferencesName;
 
+import android.content.Context;
+
+import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 
 import java.util.Date;
 
-public class AstroboyModule extends AbstractRoboModule {
-    public AstroboyModule(DefaultContextRoboModule contextRoboModule) {
-        super(contextRoboModule);
+public class AstroboyModule extends DefaultContextRoboModule {
+
+    public AstroboyModule(Context context) {
+        super(context);
     }
 
     @Override
     protected void configure() {
+        super.configure();
+        
         /*
          * Here is the place to write the configuration specific to your application, i.e. your own custom bindings.
          */
