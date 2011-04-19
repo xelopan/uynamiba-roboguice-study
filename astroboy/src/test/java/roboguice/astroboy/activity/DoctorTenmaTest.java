@@ -11,21 +11,23 @@ import roboguice.astroboy.AstroboyModule;
 import android.content.Intent;
 
 import java.io.Serializable;
+import java.util.Date;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 
 @RunWith(RobolectricTestRunner.class)
 public class DoctorTenmaTest {
 
 
+    protected DoctorTenma doctorTenma;
 
     @Before
     public void setup() {
         // BUG don't understand why this is necessary, seems like it should read the config from roboguice.xml
         RoboGuice.util.clearAllInjectors();
         RoboGuice.createAndBindNewRootInjector(Robolectric.application, new AstroboyApplicationModule(Robolectric.application));
-    }
 
-    @Test
-    public void doctorTenmaShouldNotCrash() {
         // copied from Tobio
         final Intent intent = new Intent(Robolectric.application, DoctorTenma.class);
         intent.putExtra("nullExtra", (Serializable) null);
@@ -34,11 +36,31 @@ public class DoctorTenmaTest {
         intent.putExtra("timestampExtra", 1000L);
         intent.putExtra("timestampTwiceExtra", 1000);
 
-        final DoctorTenma doctorTenma = new DoctorTenma();
+        doctorTenma = new DoctorTenma();
         doctorTenma.setIntent(intent);
 
         RoboGuice.createAndBindNewContextInjector(doctorTenma,new AstroboyModule(doctorTenma));
         doctorTenma.onCreate(null);
+    }
+
+    @Test
+    public void doctorTenmaShouldNotCrash() {
+        // just run setup
+    }
+
+    @Test
+    public void doctorTenmaVariousAssertions() {
+        assertEquals(doctorTenma.prefs.getString("dummyPref", "la la la"), "la la la");
+        assertEquals(doctorTenma.myDateExtra, new Date(0));
+
+        assertNull(doctorTenma.nullInjectedMember);
+        assertEquals("Atom", doctorTenma.nameExtra);
+        assertEquals("Atom", doctorTenma.personFromExtra.getName());
+        assertEquals(3000L, doctorTenma.personFromExtra.getAge().getTime());
+        assertEquals("Atom", doctorTenma.personFromConvertedExtra.getName());
+        assertEquals(1000L, doctorTenma.dateFromTimestampExtra.getTime());
+        assertEquals(2000L, doctorTenma.dateFromTimestampTwiceExtra.getTime());
+
     }
 
     @Test
