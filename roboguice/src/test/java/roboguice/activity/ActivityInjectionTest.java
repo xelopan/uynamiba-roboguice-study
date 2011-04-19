@@ -36,21 +36,9 @@ public class ActivityInjectionTest {
     protected DummyActivity activity;
     protected DummyPreferenceActivity prefsActivity;
 
-    @BeforeClass
-    public static void setupClass() {
-        // Because we mess with the root injector
-        // BUG should consider a way to reset RoboGuice instead of Robolectric, since it's not really robolectric's fault that we have to do this
-        Robolectric.resetStaticState();
-    }
-
-    @After
-    public void tearDownClass() {
-        // Because we messed with the root injector
-        Robolectric.resetStaticState();
-    }
-
     @Before
     public void setup() {
+        RoboGuice.util.clearAllInjectors();
         RoboGuice.createAndBindNewRootInjector(Robolectric.application, new MyApplicationModule(Robolectric.application));
         activity = new DummyActivity();
         activity.setIntent(new Intent(Robolectric.application, DummyActivity.class).putExtra("foobar", "goober").putExtra("json", "{ 'x':'y'}"));

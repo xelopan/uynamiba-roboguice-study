@@ -16,23 +16,11 @@ import java.io.Serializable;
 public class DoctorTenmaTest {
 
 
-    @BeforeClass
-    public static void setupClass() {
-        // Because we mess with the root injector
-        Robolectric.resetStaticState();
-    }
-
-    @After
-    public void tearDownClass() {
-        // Because we messed with the root injector
-        Robolectric.resetStaticState();
-    }
-
-
 
     @Before
     public void setup() {
         // BUG don't understand why this is necessary, seems like it should read the config from roboguice.xml
+        RoboGuice.util.clearAllInjectors();
         RoboGuice.createAndBindNewRootInjector(Robolectric.application, new AstroboyApplicationModule(Robolectric.application));
     }
 
