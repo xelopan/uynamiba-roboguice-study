@@ -76,6 +76,12 @@ public class ActivityInjectionTest {
     }
 
     @Test
+    @Ignore
+    public void shouldInjectStaticStringResource() {
+        assertThat(activity.staticCancel,is("Cancel"));
+    }
+
+    @Test
     public void shouldInjectExtras() {
         assertThat(activity.foobar,is("goober"));
     }
@@ -99,6 +105,8 @@ public class ActivityInjectionTest {
 
 
     public static class DummyActivity extends RoboActivity {
+        @InjectResource(R.string.cancel) protected static String staticCancel;
+
         @Inject protected String emptyString;
         @InjectView(R.id.text1) protected TextView text1;
         @InjectResource(R.string.cancel) protected String cancel;
