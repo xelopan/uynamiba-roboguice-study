@@ -2,10 +2,7 @@ package roboguice.astroboy.activity;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
 import roboguice.astroboy.AstroboyApplicationModule;
@@ -18,7 +15,6 @@ import java.io.Serializable;
 @RunWith(RobolectricTestRunner.class)
 public class DoctorTenmaTest {
 
-    protected DoctorTenma doctorTenma;
 
     @BeforeClass
     public static void setupClass() {
@@ -38,7 +34,10 @@ public class DoctorTenmaTest {
     public void setup() {
         // BUG don't understand why this is necessary, seems like it should read the config from roboguice.xml
         RoboGuice.createAndBindNewRootInjector(Robolectric.application, new AstroboyApplicationModule(Robolectric.application));
+    }
 
+    @Test
+    public void doctorTenmaShouldNotCrash() {
         // copied from Tobio
         final Intent intent = new Intent(Robolectric.application, DoctorTenma.class);
         intent.putExtra("nullExtra", (Serializable) null);
@@ -47,7 +46,7 @@ public class DoctorTenmaTest {
         intent.putExtra("timestampExtra", 1000L);
         intent.putExtra("timestampTwiceExtra", 1000);
 
-        doctorTenma = new DoctorTenma();
+        final DoctorTenma doctorTenma = new DoctorTenma();
         doctorTenma.setIntent(intent);
 
         RoboGuice.createAndBindNewContextInjector(doctorTenma,new AstroboyModule(doctorTenma));
@@ -55,7 +54,11 @@ public class DoctorTenmaTest {
     }
 
     @Test
-    public void inProgress() {
-        
+    @Ignore
+    public void astroPrefActivityShouldNotCrash() {
+        final AstroPrefActivity astroPrefActivity = new AstroPrefActivity();
+        RoboGuice.createAndBindNewContextInjector(astroPrefActivity,new AstroboyModule(astroPrefActivity));
+        astroPrefActivity.onCreate(null);
+
     }
 }
