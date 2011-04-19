@@ -44,9 +44,6 @@ public class AstroboyModule extends DefaultContextRoboModule {
          */
         bind(TalkingThing.class).to(TalkingThingMockImpl.class);
         bind(Person.class).toProvider(PersonFromNameExtraProvider.class);
-        bind(new TypeLiteral<ExtraConverter<String, Person>>(){}).to(PersonExtraConverter.class);
-        bind(new TypeLiteral<ExtraConverter<Long, Date>>(){}).to(DateExtraConverter.class);
-        bind(new TypeLiteral<ExtraConverter<Integer, Date>>(){}).to(DateTwiceExtraConverter.class);
 
         // BUG need a better way to set default preferences context
         bindConstant().annotatedWith(SharedPreferencesName.class).to("roboguice.astroboy");

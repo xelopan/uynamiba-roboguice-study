@@ -1,2 +1,6 @@
 <resources>
+    <string-array name="roboguice_modules">
+        <item>roboguice.astroboy.AstroboyModule</item>
+        <item>roboguice.astroboy.AstroboyApplicationModule</item>
+    </string-array>
 </resources>
