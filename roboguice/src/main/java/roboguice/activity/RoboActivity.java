@@ -29,8 +29,6 @@ import android.view.ViewGroup.LayoutParams;
 
 import com.google.inject.Injector;
 
-import javax.inject.Inject;
-
 /**
  * A {@link RoboActivity} extends from {@link Activity} to provide dynamic
  * injection of collaborators, using Google Guice.<br />
@@ -63,12 +61,14 @@ import javax.inject.Inject;
  * @author Mike Burton
  */
 public class RoboActivity extends Activity {
-    @Inject protected EventManager eventManager;
-    @Inject protected ViewListener viewListener;
+    protected EventManager eventManager;
+    protected ViewListener viewListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this);
+        final Injector injector = RoboGuice.getInjector(this);
+        eventManager = injector.getInstance(EventManager.class);
+        viewListener = injector.getInstance(ViewListener.class);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }

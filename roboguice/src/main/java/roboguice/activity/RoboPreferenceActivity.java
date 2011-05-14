@@ -29,7 +29,7 @@ import android.preference.PreferenceScreen;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
-import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 /**
  * A {@link RoboPreferenceActivity} extends from {@link PreferenceActivity} to provide
@@ -45,15 +45,18 @@ import com.google.inject.Inject;
  * @author Mike Burton
  */
 public abstract class RoboPreferenceActivity extends PreferenceActivity {
-    @Inject protected EventManager eventManager;
-    @Inject protected ViewListener viewListener;
-    @Inject protected PreferenceListener preferenceListener;
+    protected EventManager eventManager;
+    protected ViewListener viewListener;
+    protected PreferenceListener preferenceListener;
 
 
     /** {@inheritDoc } */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this);
+        final Injector injector = RoboGuice.getInjector(this);
+        eventManager = injector.getInstance(EventManager.class);
+        viewListener = injector.getInstance(ViewListener.class);
+        preferenceListener = injector.getInstance(PreferenceListener.class);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }

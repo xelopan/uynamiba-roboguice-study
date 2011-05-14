@@ -29,7 +29,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
-import javax.inject.Inject;
+import com.google.inject.Injector;
 
 /**
  * A subclass of {@link AccountAuthenticatorActivity} that provides dependency injection
@@ -38,12 +38,14 @@ import javax.inject.Inject;
  * @author Marcus Better
  */
 public class RoboAccountAuthenticatorActivity extends AccountAuthenticatorActivity {
-    @Inject protected EventManager eventManager;
-    @Inject protected ViewListener viewListener;
+    protected EventManager eventManager;
+    protected ViewListener viewListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this);
+        final Injector injector = RoboGuice.getInjector(this);
+        eventManager = injector.getInstance(EventManager.class);
+        viewListener = injector.getInstance(ViewListener.class);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
