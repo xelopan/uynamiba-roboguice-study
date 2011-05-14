@@ -9,7 +9,9 @@ import roboguice.inject.ResourceListener;
 import roboguice.inject.ViewListener;
 import roboguice.util.RoboMatchers;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.Service;
 import android.content.Context;
 import android.os.Handler;
 
@@ -44,6 +46,12 @@ public class DefaultContextRoboModule extends AbstractModule {
 
         // The context
         bind(Context.class).toInstance(context);
+
+        if( context instanceof Service )
+            bind(Service.class).toInstance((Service)context);
+
+        else if( context instanceof Activity )
+            bind(Activity.class).toInstance((Activity)context);
 
 
         // Sundry Android Classes
