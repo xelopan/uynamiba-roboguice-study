@@ -3,12 +3,13 @@ package roboguice.config;
 import roboguice.event.EventManager;
 import roboguice.event.ObservesTypeListener;
 import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
-import roboguice.inject.*;
+import roboguice.inject.ExtrasListener;
+import roboguice.inject.PreferenceListener;
+import roboguice.inject.ResourceListener;
+import roboguice.inject.ViewListener;
 
 import android.app.Application;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 
 import com.google.inject.AbstractModule;
@@ -40,12 +41,9 @@ public class DefaultContextRoboModule extends AbstractModule {
         final PreferenceListener preferenceListener = new PreferenceListener(context);
         final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator(getProvider(Handler.class));
 
-        requestInjection(extrasListener);
 
 
         // Sundry Android Classes
-        bind(SharedPreferences.class).toProvider(SharedPreferencesProvider.class);
-        bind(ContentResolver.class).toProvider(ContentResolverProvider.class);
         bind(EventManager.class).toInstance(eventManager);
         bind(EventListenerThreadingDecorator.class).toInstance(observerThreadingDecorator);
         bind(ViewListener.class).toInstance(viewListener);
