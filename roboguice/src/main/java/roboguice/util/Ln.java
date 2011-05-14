@@ -212,9 +212,10 @@ public class Ln  {
         @Inject
         public BaseConfig(Application context) {
             try {
+                packageName = context.getPackageName();
+                
                 final ApplicationInfo info = context.getPackageManager().getApplicationInfo(packageName, 0);
                 final int flags = info!=null ? info.flags : 0;
-                packageName = context.getPackageName();
                 minimumLogLevel = (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 ? Log.VERBOSE : Log.INFO;
                 scope = packageName!=null ? packageName.toUpperCase() : "";
 
