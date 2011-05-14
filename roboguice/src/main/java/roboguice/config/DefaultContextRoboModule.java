@@ -54,7 +54,7 @@ public class DefaultContextRoboModule extends AbstractModule {
             bind(Activity.class).toInstance((Activity)context);
 
 
-        // Sundry Android Classes
+        // Sundry RoboGuice Classes
         bind(EventManager.class).toInstance(eventManager);
         bind(EventListenerThreadingDecorator.class).toInstance(observerThreadingDecorator);
         bind(ViewListener.class).toInstance(viewListener);
@@ -62,12 +62,13 @@ public class DefaultContextRoboModule extends AbstractModule {
         bind(ExtrasListener.class).toInstance(extrasListener);
         
 
-        // Android Resources, Views and extras require special handling
+        // Listeners that match on any
         bindListener(Matchers.any(), resourceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
         bindListener(Matchers.any(), extrasListener);
 
 
+        // Listeners that match on activity
         bindListener(RoboMatchers.subclassesOfActivity(), viewListener );
         bindListener(RoboMatchers.subclassesOfActivity(), preferenceListener);
 
