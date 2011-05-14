@@ -27,22 +27,29 @@ public class RoboGuice {
 
 
     /**
-     * Return the cached Injector instance for this application, or create a new one if necessary.
-     */
-    public static Injector getRootInjector(Application application) {
-        final Injector injector = injectors.get(application);
-        return injector!=null ? injector : createAndBindNewRootInjector(DEFAULT_STAGE, application);
-    }
-
-    /**
      * Return the cached Injector instance for this context, or create a new child injector for this context if necessary.
      */
     public static Injector getInjector(Context context) {
         final Injector i = injectors.get(context);
-        return i!=null ? i : createAndBindNewContextInjector(context);
+        return i!=null ? i : bindNewContextInjector(context);
     }
 
-    public static Injector createAndBindNewContextInjector( Context context, Module... modules ) {
+    /**
+     * Return the cached Injector instance for this application, or create a new one if necessary.
+     */
+    public static Injector getApplicationInjector(Application application) {
+        final Injector injector = injectors.get(application);
+        return injector!=null ? injector : bindNewApplicationInjector(DEFAULT_STAGE, application);
+    }
+
+
+
+
+
+
+
+
+    public static Injector bindNewContextInjector(Context context, Module... modules) {
         Injector rtrn = injectors.get(context);
         if( rtrn!=null )
             throw new UnsupportedOperationException("An injector was already associated with " + context);
@@ -52,7 +59,7 @@ public class RoboGuice {
             if( rtrn!=null )
                 return rtrn;
 
-            rtrn = getRootInjector((Application) context.getApplicationContext()).createChildInjector( createContextModuleList(context,modules) );
+            rtrn = getApplicationInjector((Application) context.getApplicationContext()).createChildInjector( createContextModuleList(context,modules) );
             injectors.put(context, rtrn);
 
         }
@@ -64,23 +71,23 @@ public class RoboGuice {
      * Creates a new injector and associates it with the specified application.  It is an error to
      * create multiple injectors for a single application.
      *
-     * Generally, you should prefer #getRootInjector unless you specifically need this funcionality
+     * Generally, you should prefer #getApplicationInjector unless you specifically need this funcionality
      *
      * @throws UnsupportedOperationException if an injector was already associated with this application
      */
-    public static Injector createAndBindNewRootInjector(Application application, ApplicationModule... modules) {
-        return createAndBindNewRootInjector(DEFAULT_STAGE, application, modules);
+    public static Injector bindNewApplicationInjector(Application application, ApplicationModule... modules) {
+        return bindNewApplicationInjector(DEFAULT_STAGE, application, modules);
     }
 
     /**
      * Creates a new injector and associates it with the specified application.  It is an error to
      * create multiple injectors for a single application.
      *
-     * Generally, you should prefer #getRootInjector unless you specifically need this funcionality
+     * Generally, you should prefer #getApplicationInjector unless you specifically need this funcionality
      *
      * @throws UnsupportedOperationException if an injector was already associated with this application
      */
-    public static Injector createAndBindNewRootInjector(Stage stage, Application application, ApplicationModule... modules) {
+    public static Injector bindNewApplicationInjector(Stage stage, Application application, ApplicationModule... modules) {
 
         Injector injector = injectors.get(application);
         if( injector!=null )
@@ -169,7 +176,7 @@ public class RoboGuice {
 
         /**
          * Clear all of RoboGuice's cached injectors.  Designed to be used when working with multiple
-         * testcases that share the same application.
+         * testcases that share the same application.  Should not generally be used inside an app.
          */
         public static void clearAllInjectors() {
             injectors.clear();

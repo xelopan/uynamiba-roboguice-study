@@ -135,7 +135,7 @@ public class ExtrasListener implements TypeListener {
             // Getting bindings map to check if a binding exists
             // We DO NOT currently check for injector's parent bindings. Should we ?
             //final Injector injector = injectorProvider.get();
-            final Injector injector = RoboGuice.getRootInjector((Application)context.getApplicationContext());
+            final Injector injector = RoboGuice.getApplicationInjector((Application) context.getApplicationContext());
             final Map<Key<?>, Binding<?>> bindings = injector.getBindings();
 
             if (bindings.containsKey(key))

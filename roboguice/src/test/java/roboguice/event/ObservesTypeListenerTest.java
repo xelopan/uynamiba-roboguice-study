@@ -31,7 +31,7 @@ public class ObservesTypeListenerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         final Activity activity = new DummyActivity();
-        injector = RoboGuice.createAndBindNewContextInjector(new DummyActivity(), new MyContextModule(activity));
+        injector = RoboGuice.bindNewContextInjector(new DummyActivity(), new MyContextModule(activity));
 
         eventManager = injector.getInstance(EventManager.class);
 
