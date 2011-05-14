@@ -58,8 +58,8 @@ public class DefaultContextRoboModule extends AbstractModule {
         bindListener(Matchers.any(), extrasListener);
 
 
-        bindListener(RoboMatchers.subclassesOfContext(), viewListener );
-        bindListener(RoboMatchers.subclassesOfContext(), preferenceListener);
+        bindListener(RoboMatchers.subclassesOfActivity(), viewListener );
+        bindListener(RoboMatchers.subclassesOfActivity(), preferenceListener);
 
     }
 }
