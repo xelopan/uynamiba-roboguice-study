@@ -27,7 +27,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
-import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 /**
  * A {@link RoboActivityGroup} extends from {@link ActivityGroup} to provide
@@ -38,12 +38,14 @@ import com.google.inject.Inject;
  * @author Toly Pochkin
  */
 public class RoboActivityGroup extends ActivityGroup {
-    @Inject protected EventManager eventManager;
-    @Inject protected ViewListener viewListener;
+    protected EventManager eventManager;
+    protected ViewListener viewListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this);
+        final Injector injector = RoboGuice.getInjector(this);
+        eventManager = injector.getInstance(EventManager.class);
+        viewListener = injector.getInstance(ViewListener.class);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }

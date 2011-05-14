@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
 import com.google.android.maps.MapActivity;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
@@ -39,12 +38,14 @@ import com.google.inject.Injector;
  * @author Mike Burton
  */
 public abstract class RoboMapActivity extends MapActivity {
-    @Inject protected EventManager eventManager;
-    @Inject protected ViewListener viewListener;
+    protected EventManager eventManager;
+    protected ViewListener viewListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoboGuice.getInjector(this);
+        final Injector injector = RoboGuice.getInjector(this);
+        eventManager = injector.getInstance(EventManager.class);
+        viewListener = injector.getInstance(ViewListener.class);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
