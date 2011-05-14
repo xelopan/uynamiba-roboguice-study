@@ -7,6 +7,7 @@ import roboguice.inject.ExtrasListener;
 import roboguice.inject.PreferenceListener;
 import roboguice.inject.ResourceListener;
 import roboguice.inject.ViewListener;
+import roboguice.util.RoboMatchers;
 
 import android.app.Application;
 import android.content.Context;
@@ -53,10 +54,12 @@ public class DefaultContextRoboModule extends AbstractModule {
 
         // Android Resources, Views and extras require special handling
         bindListener(Matchers.any(), resourceListener);
-        bindListener(Matchers.any(), extrasListener);
-        bindListener(Matchers.any(), viewListener);
-        bindListener(Matchers.any(), preferenceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
+        bindListener(Matchers.any(), extrasListener);
+
+
+        bindListener(RoboMatchers.subclassesOfContext(), viewListener );
+        bindListener(RoboMatchers.subclassesOfContext(), preferenceListener);
 
     }
 }
