@@ -64,7 +64,7 @@ public class DoctorTenmaTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("having test problems with prefactivities")
     public void astroPrefActivityShouldNotCrash() {
         final AstroPrefActivity astroPrefActivity = new AstroPrefActivity();
         RoboGuice.createAndBindNewContextInjector(astroPrefActivity,new AstroboyModule(astroPrefActivity));

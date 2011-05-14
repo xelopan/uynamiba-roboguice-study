@@ -84,9 +84,8 @@ public class ActivityInjectionTest {
         assertThat(activity.json.get("x").getAsString(), is("y"));
     }
 
-    // BUG This doesn't work yet because createNewPreferenceScreen doesn't properly model whatever's goign on
     @Test
-    @Ignore
+    @Ignore("This doesn't work yet because createNewPreferenceScreen doesn't properly model whatever's goign on")
     public void shouldInjectPreference() {
         assertThat(prefsActivity.pref, is(prefsActivity.findPreference("xxx")));
     }
