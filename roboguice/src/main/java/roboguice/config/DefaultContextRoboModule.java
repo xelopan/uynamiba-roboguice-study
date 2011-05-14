@@ -25,23 +25,25 @@ public class DefaultContextRoboModule extends AbstractModule {
     protected ResourceListener resourceListener;
     protected ViewListener viewListener;
     protected EventManager eventManager;
+    protected ExtrasListener extrasListener;
+    protected PreferenceListener preferenceListener;
 
     public DefaultContextRoboModule(Context context) {
         this.context = context;
+        this.viewListener = new ViewListener(context);
+        this.resourceListener = new ResourceListener((Application)context.getApplicationContext());
+        this.eventManager = new EventManager(context);
+        this.extrasListener = new ExtrasListener(context);
+        this.preferenceListener = new PreferenceListener(context);
     }
 
     @Override
     protected void configure() {
-        bind(Context.class).toInstance(context);
-        viewListener = new ViewListener(context);
-        resourceListener = new ResourceListener((Application)context.getApplicationContext());
-        eventManager = new EventManager(context);
-
-
-        final ExtrasListener extrasListener = new ExtrasListener(context);
-        final PreferenceListener preferenceListener = new PreferenceListener(context);
         final EventListenerThreadingDecorator observerThreadingDecorator = new EventListenerThreadingDecorator(getProvider(Handler.class));
 
+
+        // The context
+        bind(Context.class).toInstance(context);
 
 
         // Sundry Android Classes
