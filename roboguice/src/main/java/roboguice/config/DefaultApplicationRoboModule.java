@@ -1,15 +1,15 @@
 package roboguice.config;
 
-import roboguice.inject.AssetManagerProvider;
-import roboguice.inject.ResourcesProvider;
-import roboguice.inject.SystemServiceProvider;
+import roboguice.inject.*;
 import roboguice.util.Ln;
 import roboguice.util.RoboAsyncTask;
 import roboguice.util.RoboThread;
 import roboguice.util.Strings;
 
 import android.app.*;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -84,6 +84,8 @@ public class DefaultApplicationRoboModule extends AbstractModule implements Appl
         bind(TelephonyManager.class).toProvider( new SystemServiceProvider<TelephonyManager>(Context.TELEPHONY_SERVICE));
         bind(Resources.class).toProvider(ResourcesProvider.class);
         bind(AssetManager.class).toProvider(AssetManagerProvider.class);
+        bind(SharedPreferences.class).toProvider(SharedPreferencesProvider.class);
+        bind(ContentResolver.class).toProvider(ContentResolverProvider.class);
 
 
         requestStaticInjection(Ln.class);

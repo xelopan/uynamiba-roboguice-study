@@ -15,6 +15,7 @@
  */
 package roboguice.inject;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -31,7 +32,7 @@ public class SharedPreferencesProvider implements Provider<SharedPreferences> {
 
     protected String preferencesName;
 
-    @Inject protected Context context;
+    @Inject protected Application context;
 
     public SharedPreferencesProvider() {
         preferencesName = DEFAULT;
