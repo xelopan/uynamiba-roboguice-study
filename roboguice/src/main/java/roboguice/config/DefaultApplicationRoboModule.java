@@ -1,12 +1,19 @@
 package roboguice.config;
 
+import roboguice.inject.AssetManagerProvider;
+import roboguice.inject.ResourcesProvider;
 import roboguice.inject.SystemServiceProvider;
+import roboguice.util.Ln;
+import roboguice.util.RoboAsyncTask;
+import roboguice.util.RoboThread;
 import roboguice.util.Strings;
 
 import android.app.*;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -75,8 +82,13 @@ public class DefaultApplicationRoboModule extends AbstractModule implements Appl
         bind(InputMethodManager.class).toProvider(new SystemServiceProvider<InputMethodManager>(Context.INPUT_METHOD_SERVICE));
         bind(SensorManager.class).toProvider( new SystemServiceProvider<SensorManager>(Context.SENSOR_SERVICE));
         bind(TelephonyManager.class).toProvider( new SystemServiceProvider<TelephonyManager>(Context.TELEPHONY_SERVICE));
+        bind(Resources.class).toProvider(ResourcesProvider.class);
+        bind(AssetManager.class).toProvider(AssetManagerProvider.class);
 
 
+        requestStaticInjection(Ln.class);
+        requestStaticInjection(RoboThread.class);
+        requestStaticInjection(RoboAsyncTask.class);
 
     }
 

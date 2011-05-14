@@ -4,16 +4,11 @@ import roboguice.event.EventManager;
 import roboguice.event.ObservesTypeListener;
 import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
 import roboguice.inject.*;
-import roboguice.util.Ln;
-import roboguice.util.RoboAsyncTask;
-import roboguice.util.RoboThread;
 
 import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.os.Handler;
 
 import com.google.inject.AbstractModule;
@@ -50,11 +45,9 @@ public class DefaultContextRoboModule extends AbstractModule {
 
         // Sundry Android Classes
         bind(SharedPreferences.class).toProvider(SharedPreferencesProvider.class);
-        bind(Resources.class).toProvider(ResourcesProvider.class);
         bind(ContentResolver.class).toProvider(ContentResolverProvider.class);
         bind(EventManager.class).toInstance(eventManager);
         bind(EventListenerThreadingDecorator.class).toInstance(observerThreadingDecorator);
-        bind(AssetManager.class).toProvider(AssetManagerProvider.class);
         bind(ViewListener.class).toInstance(viewListener);
         bind(PreferenceListener.class).toInstance(preferenceListener);
         bind(ExtrasListener.class).toInstance(extrasListener);
@@ -67,11 +60,6 @@ public class DefaultContextRoboModule extends AbstractModule {
         bindListener(Matchers.any(), preferenceListener);
         bindListener(Matchers.any(), new ObservesTypeListener(context, eventManager, observerThreadingDecorator));
 
-
-
-        requestStaticInjection(Ln.class);
-        requestStaticInjection(RoboThread.class);
-        requestStaticInjection(RoboAsyncTask.class);
     }
 }
 
