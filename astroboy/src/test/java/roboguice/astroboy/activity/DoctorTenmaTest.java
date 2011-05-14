@@ -26,7 +26,7 @@ public class DoctorTenmaTest {
     public void setup() {
         // BUG don't understand why this is necessary, seems like it should read the config from roboguice.xml
         RoboGuice.util.clearAllInjectors();
-        RoboGuice.createAndBindNewRootInjector(Robolectric.application, new AstroboyApplicationModule(Robolectric.application));
+        RoboGuice.bindNewApplicationInjector(Robolectric.application, new AstroboyApplicationModule(Robolectric.application));
 
         // copied from Tobio
         final Intent intent = new Intent(Robolectric.application, DoctorTenma.class);
@@ -39,7 +39,7 @@ public class DoctorTenmaTest {
         doctorTenma = new DoctorTenma();
         doctorTenma.setIntent(intent);
 
-        RoboGuice.createAndBindNewContextInjector(doctorTenma,new AstroboyModule(doctorTenma));
+        RoboGuice.bindNewContextInjector(doctorTenma, new AstroboyModule(doctorTenma));
         doctorTenma.onCreate(null);
     }
 
@@ -67,7 +67,7 @@ public class DoctorTenmaTest {
     @Ignore("having test problems with prefactivities")
     public void astroPrefActivityShouldNotCrash() {
         final AstroPrefActivity astroPrefActivity = new AstroPrefActivity();
-        RoboGuice.createAndBindNewContextInjector(astroPrefActivity,new AstroboyModule(astroPrefActivity));
+        RoboGuice.bindNewContextInjector(astroPrefActivity, new AstroboyModule(astroPrefActivity));
         astroPrefActivity.onCreate(null);
 
     }
