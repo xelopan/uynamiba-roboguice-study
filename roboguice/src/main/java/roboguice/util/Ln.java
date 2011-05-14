@@ -221,7 +221,7 @@ public class Ln  {
                 Ln.d("Configuring Logging, minimum log level is %s", logLevelToString(minimumLogLevel) );
 
             } catch( Exception e ) {
-                Log.e(packageName, "Error configuring logger", e);
+                Log.e(packageName, "Error configuring logger for package '" + packageName + "'", e);
             }
         }
 
