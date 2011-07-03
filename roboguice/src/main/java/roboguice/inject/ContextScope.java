@@ -50,16 +50,15 @@ package roboguice.inject;
  * From http://code.google.com/p/google-guice/wiki/CustomScopes
  */
 
-import roboguice.application.RoboApplication;
 import roboguice.util.Ln;
 import roboguice.util.Strings;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
-import com.google.inject.internal.Maps;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class ContextScope implements Scope {
     protected ArrayList<ViewMembersInjector<?>> viewsForInjection = new ArrayList<ViewMembersInjector<?>>();
     protected ArrayList<PreferenceMembersInjector<?>> preferencesForInjection = new ArrayList<PreferenceMembersInjector<?>>();
 
-    public ContextScope(RoboApplication app) {
+    public ContextScope(Application app) {
         enter(app);
     }
 
@@ -156,7 +155,7 @@ public class ContextScope implements Scope {
 
         Map<Key<?>,WeakReference<Object>> scopedObjects = values.get(context);
         if (scopedObjects == null) {
-            scopedObjects = Maps.newHashMap();
+            scopedObjects = com.google.inject.internal.util.$Maps.newHashMap();
             values.put(context, scopedObjects);
         }
 

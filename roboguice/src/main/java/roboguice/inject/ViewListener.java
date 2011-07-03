@@ -22,7 +22,6 @@ import android.content.Context;
 import com.google.inject.MembersInjector;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.Nullable;
 import com.google.inject.spi.TypeEncounter;
 
 import java.lang.ref.WeakReference;
@@ -45,29 +44,22 @@ public class ViewListener implements StaticTypeListener {
     }
 
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-        Class<?> c = typeLiteral.getRawType();
-        while (c != null) {
-            for (Field field : c.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class)) {
+
+        for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
+            for (Field field : c.getDeclaredFields())
+                if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
                     typeEncounter.register(new ViewMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectView.class), scope));
-                }
-            }
-            c = c.getSuperclass();
-        }
+
     }
 
     @SuppressWarnings("unchecked")
     public void requestStaticInjection(Class<?>... types) {
-        for (Class<?> c : types) {
-            while (c != null) {
-                for (Field field : c.getDeclaredFields()) {
-                    if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class)) {
+            
+        for (Class<?> c : types)
+            for( ; c!=Object.class; c=c.getSuperclass() )
+                for (Field field : c.getDeclaredFields())
+                    if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class))
                         new ViewMembersInjector(field, contextProvider, field.getAnnotation(InjectView.class), scope).injectMembers(null);
-                    }
-                }
-                c = c.getSuperclass();
-            }
-        }
 
     }
 }
@@ -104,7 +96,7 @@ class ViewMembersInjector<T> implements MembersInjector<T> {
 
             value = ((Activity) contextProvider.get()).findViewById(annotation.value());
 
-            if (value == null && field.getAnnotation(Nullable.class) == null)
+            if (value == null && Nullable.notNullable(field))
                 throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));
 
             field.setAccessible(true);
@@ -118,4 +110,6 @@ class ViewMembersInjector<T> implements MembersInjector<T> {
                     field.getType(), field.getName()));
         }
     }
+
+
 }

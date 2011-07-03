@@ -22,7 +22,6 @@ import android.preference.PreferenceActivity;
 import com.google.inject.MembersInjector;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.Nullable;
 import com.google.inject.spi.TypeEncounter;
 
 import java.lang.ref.WeakReference;
@@ -103,12 +102,12 @@ class PreferenceMembersInjector<T> implements MembersInjector<T> {
 
             value = ((PreferenceActivity) contextProvider.get()).findPreference(annotation.value());
 
-            if (value == null && field.getAnnotation(Nullable.class) == null)
+            if (value == null && Nullable.notNullable(field) )
                 throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));
 
 
             field.setAccessible(true);
-            field.set(instanceRef, value);
+            field.set(instance, value);
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
