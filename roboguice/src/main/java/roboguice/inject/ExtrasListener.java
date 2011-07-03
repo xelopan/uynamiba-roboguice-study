@@ -15,12 +15,13 @@
  */
 package roboguice.inject;
 
+import roboguice.RoboGuice;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
 import com.google.inject.*;
-import com.google.inject.internal.Nullable;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 import com.google.inject.util.Types;
@@ -43,15 +44,12 @@ public class ExtrasListener implements TypeListener {
 
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
 
-        Class<?> c = typeLiteral.getRawType();
-        while (c != null) {
-            for (Field field : c.getDeclaredFields()) {
+        for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
+            for (Field field : c.getDeclaredFields())
                 if (field.isAnnotationPresent(InjectExtra.class))
                     typeEncounter.register(new ExtrasMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectExtra.class)));
 
-            }
-            c = c.getSuperclass();
-        }
+
     }
 
 
@@ -94,11 +92,7 @@ public class ExtrasListener implements TypeListener {
 
             value = extras.get(id);
 
-            // Context must implement InjectorProvider to enable extra conversion
-            if (context instanceof InjectorProvider) {
-                Injector injector = ((InjectorProvider) context).getInjector();
-                value = convert(field, value, injector);
-            }
+            value = convert(field, value, RoboGuice.getInjector(activity.getApplication()));
 
             /*
              * Please notice : null checking is done AFTER conversion. Having
@@ -108,7 +102,7 @@ public class ExtrasListener implements TypeListener {
              * don't use @Nullable and a converter returns null, an exception will
              * be thrown (which I find to be the most logic behavior).
              */
-            if (value == null && field.getAnnotation(Nullable.class) == null) {
+            if (value == null && Nullable.notNullable(field) ) {
                 throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field
                         .getName()));
             }
