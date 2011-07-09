@@ -1,9 +1,7 @@
 package roboguice.service;
 
-import roboguice.application.RoboApplication;
+import roboguice.RoboGuice;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
-import roboguice.inject.InjectorProvider;
 import roboguice.service.event.OnConfigurationChangedEvent;
 import roboguice.service.event.OnCreateEvent;
 import roboguice.service.event.OnDestroyEvent;
@@ -32,15 +30,14 @@ import com.google.inject.Injector;
  * You can have access to the Guice
  * {@link Injector} at any time, by calling {@link #getInjector()}.<br />
  * <p/>
- * However, you will not have access to Context scoped beans until
+ * However, you will not have access to ContextScoped scoped beans until
  * {@link #onCreate()} is called. <br /> <br />
  *
  * @author Donn Felker
  */
-public abstract class RoboIntentService extends IntentService implements InjectorProvider {
+public abstract class RoboIntentService extends IntentService {
 
     protected EventManager eventManager;
-    protected ContextScope scope;
 
 
     public RoboIntentService(String name) {
@@ -50,10 +47,8 @@ public abstract class RoboIntentService extends IntentService implements Injecto
 
     @Override
     public void onCreate() {
-        final Injector injector = getInjector();
+        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
         eventManager = injector.getInstance(EventManager.class);
-        scope = injector.getInstance(ContextScope.class);
-        scope.enter(this);
         injector.injectMembers(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
@@ -61,7 +56,6 @@ public abstract class RoboIntentService extends IntentService implements Injecto
 
     @Override
     public void onStart(Intent intent, int startId) {
-        scope.enter(this);
         super.onStart(intent, startId);
         eventManager.fire(new OnStartEvent() );
     }
@@ -69,9 +63,12 @@ public abstract class RoboIntentService extends IntentService implements Injecto
 
     @Override
     public void onDestroy() {
-        eventManager.fire(new OnDestroyEvent() );
-        scope.exit(this);
-        super.onDestroy();
+        try {
+            eventManager.fire(new OnDestroyEvent() );
+        } finally {
+            RoboGuice.getInjector(this).closeScope(this);
+            super.onDestroy();
+        }
     }
 
     @Override
@@ -80,13 +77,5 @@ public abstract class RoboIntentService extends IntentService implements Injecto
         super.onConfigurationChanged(newConfig);
         eventManager.fire(new OnConfigurationChangedEvent(currentConfig,newConfig) );
     }
-
-    /**
-     * @see roboguice.application.RoboApplication#getInjector()
-     */
-    public Injector getInjector() {
-        return ((RoboApplication) getApplication()).getInjector();
-    }
-
 
 }

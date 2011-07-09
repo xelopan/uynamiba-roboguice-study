@@ -19,6 +19,9 @@ public abstract class RoboAsyncTask<ResultT> extends SafeAsyncTask<ResultT> {
     @Inject static protected Provider<Context> contextProvider;
     @Inject static protected Provider<ContextScope> scopeProvider;
 
+    protected Context context = contextProvider.get();
+    protected ContextScope scope = scopeProvider.get();
+
     protected RoboAsyncTask() {
     }
 
@@ -36,27 +39,23 @@ public abstract class RoboAsyncTask<ResultT> extends SafeAsyncTask<ResultT> {
 
     @Override
     protected Task<ResultT> newTask() {
-        return new Task<ResultT>(this);
+        return new Task<ResultT>(this, context, scope);
     }
 
     protected static class Task<ResultT> extends SafeAsyncTask.Task<ResultT> {
         protected Context context;
         protected ContextScope scope;
 
-        public Task(SafeAsyncTask parent) {
+        public Task(SafeAsyncTask<ResultT> parent, Context context, ContextScope scope) {
             super(parent);
-            this.context = contextProvider.get();
-            this.scope = scopeProvider.get();
+            this.context = context;
+            this.scope = scope;
         }
 
         @Override
         protected ResultT doCall() throws Exception {
-            try {
-                scope.enter(context);
-                return super.doCall();
-            } finally {
-                scope.exit(context);
-            }
+            scope.open(context); // BUG is this even necessary anymore?
+            return super.doCall();
         }
     }
 }

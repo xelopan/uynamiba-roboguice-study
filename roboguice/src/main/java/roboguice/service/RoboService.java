@@ -10,10 +10,8 @@
  */
 package roboguice.service;
 
-import roboguice.application.RoboApplication;
+import roboguice.RoboGuice;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
-import roboguice.inject.InjectorProvider;
 import roboguice.service.event.OnConfigurationChangedEvent;
 import roboguice.service.event.OnCreateEvent;
 import roboguice.service.event.OnDestroyEvent;
@@ -42,23 +40,20 @@ import com.google.inject.Injector;
  * You can have access to the Guice
  * {@link Injector} at any time, by calling {@link #getInjector()}.<br />
  *
- * However, you will not have access to Context scoped beans until
+ * However, you will not have access to ContextScoped scoped beans until
  * {@link #onCreate()} is called. <br /> <br />
  *
  * @author Mike Burton
  * @author Christine Karman
  */
-public abstract class RoboService extends Service implements InjectorProvider {
+public abstract class RoboService extends Service {
 
     protected EventManager eventManager;
-    protected ContextScope scope;
 
     @Override
     public void onCreate() {
-        final Injector injector = getInjector();
+        final Injector injector = RoboGuice.getApplicationInjector(getApplication());
         eventManager = injector.getInstance(EventManager.class);
-        scope = injector.getInstance(ContextScope.class);
-        scope.enter(this);
         injector.injectMembers(this);
         super.onCreate();
         eventManager.fire(new OnCreateEvent() );
@@ -66,20 +61,16 @@ public abstract class RoboService extends Service implements InjectorProvider {
 
     @Override
     public void onStart(Intent intent, int startId) {
-        scope.enter(this);
         super.onStart(intent, startId);
         eventManager.fire(new OnStartEvent());
     }
 
     @Override
     public void onDestroy() {
-        scope.enter(this);
         try {
             eventManager.fire(new OnDestroyEvent() );
         } finally {
-            eventManager.clear(this);
-            scope.exit(this);
-            scope.dispose(this);
+            RoboGuice.getInjector(this).closeScope(this);
             super.onDestroy();
         }
     }
@@ -91,10 +82,4 @@ public abstract class RoboService extends Service implements InjectorProvider {
         eventManager.fire(new OnConfigurationChangedEvent(currentConfig, newConfig) );
     }
 
-    /**
-     * @see roboguice.application.RoboApplication#getInjector() 
-     */
-    public Injector getInjector() {
-        return ((RoboApplication) getApplication()).getInjector();
-    }
 }
