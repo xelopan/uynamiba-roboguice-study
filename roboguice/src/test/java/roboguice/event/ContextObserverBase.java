@@ -10,10 +10,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Base Context Observer testing class exercising the various implementation combinations.
+ * Base ContextScoped Observer testing class exercising the various implementation combinations.
  *
  * @author John Ericksen
  */
+@SuppressWarnings({"UnusedParameters", "UnusedDeclaration"})
 public class ContextObserverBase {
 
     private Map<String, Map<Class<?>, Integer>> callCount = new HashMap<String, Map<Class<?>, Integer>>();
