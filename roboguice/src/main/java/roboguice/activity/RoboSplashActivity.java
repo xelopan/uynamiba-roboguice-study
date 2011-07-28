@@ -1,11 +1,8 @@
 package roboguice.activity;
 
-import roboguice.application.RoboApplication;
-import roboguice.inject.ContextScope;
-
 import android.app.Activity;
+import android.app.Application;
 import android.os.Bundle;
-import android.content.Intent;
 
 /**
  * An activity that can be used to display a splash page while initializing the
@@ -31,33 +28,27 @@ public abstract class RoboSplashActivity extends Activity {
 
         new Thread(new Runnable() {
             public void run() {
-                // Set up a new thread since app.getInjector() takes so long
+                // Set up a new thread since app.getApplicationInjector() takes so long
                 // Set the execution context for this thread in case the user
                 // want to use the injector
-                final RoboApplication app = (RoboApplication) getApplication();
-                final ContextScope scope = app.getInjector().getInstance(ContextScope.class);
+                final Application app = getApplication();
 
-                scope.enter(app);
-                try {
 
-                    doStuffInBackground(app);
+                doStuffInBackground(app);
 
-                    // Make sure we display splash for MIN_DISPLAY_MS
-                    final long duration = System.currentTimeMillis() - start;
-                    if (duration < minDisplayMs) {
-                        try {
-                            Thread.sleep(minDisplayMs - duration);
-                        } catch (InterruptedException e) {
-                            Thread.interrupted();
-                        }
+                // Make sure we display splash for MIN_DISPLAY_MS
+                final long duration = System.currentTimeMillis() - start;
+                if (duration < minDisplayMs) {
+                    try {
+                        Thread.sleep(minDisplayMs - duration);
+                    } catch (InterruptedException e) {
+                        Thread.interrupted();
                     }
-
-                    startNextActivity();
-                    andFinishThisOne();
-
-                } finally {
-                    scope.exit(app);
                 }
+
+                startNextActivity();
+                andFinishThisOne();
+
             }
 
         }).start();
@@ -68,7 +59,8 @@ public abstract class RoboSplashActivity extends Activity {
      * 
      * @param app
      */
-    protected void doStuffInBackground(RoboApplication app) {
+    @SuppressWarnings({"UnusedParameters"})
+    protected void doStuffInBackground(Application app) {
     }
 
     /**

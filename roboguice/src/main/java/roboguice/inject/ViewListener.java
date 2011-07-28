@@ -16,106 +16,110 @@
 package roboguice.inject;
 
 import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
+import android.view.View;
 
 import com.google.inject.MembersInjector;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.Nullable;
 import com.google.inject.spi.TypeEncounter;
+import com.google.inject.spi.TypeListener;
 
-import java.lang.ref.WeakReference;
+import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.WeakHashMap;
 
-/**
- * 
- * @author Mike Burton
- */
-public class ViewListener implements StaticTypeListener {
-    protected Provider<Context> contextProvider;
-    protected Application application;
-    protected ContextScope scope;
+@Singleton
+public class ViewListener implements TypeListener {
 
-    public ViewListener(Provider<Context> contextProvider, Application application, ContextScope scope) {
-        this.contextProvider = contextProvider;
-        this.application = application;
-        this.scope = scope;
-    }
 
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-        Class<?> c = typeLiteral.getRawType();
-        while (c != null) {
-            for (Field field : c.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class)) {
-                    typeEncounter.register(new ViewMembersInjector<I>(field, contextProvider, field.getAnnotation(InjectView.class), scope));
+
+        for( Class<?> c = typeLiteral.getRawType(); c!=Object.class; c=c.getSuperclass() )
+            for (Field field : c.getDeclaredFields())
+                if (field.isAnnotationPresent(InjectView.class))
+                    if( Modifier.isStatic(field.getModifiers()) )
+                        throw new UnsupportedOperationException("Views may not be statically injected");
+                    else if( !View.class.isAssignableFrom(field.getType()))
+                        throw new UnsupportedOperationException("You may only use @InjectView on fields descended from type View");
+                    else
+                        typeEncounter.register(new ViewMembersInjector<I>(field, field.getAnnotation(InjectView.class)));
+
+    }
+
+
+    public void injectViews(Object instance) {
+        ViewMembersInjector.injectViews(instance);
+    }
+
+
+
+    
+
+
+
+    public static class ViewMembersInjector<T> implements MembersInjector<T> {
+        protected static WeakHashMap<Object,ArrayList<ViewMembersInjector<?>>> viewMembersInjectors = new WeakHashMap<Object, ArrayList<ViewMembersInjector<?>>>();
+
+        protected Field field;
+        protected InjectView annotation;
+
+        public ViewMembersInjector(Field field, InjectView annotation) {
+            this.field = field;
+            this.annotation = annotation;
+        }
+
+        public void injectMembers(T activityOrView) {
+            synchronized (ViewMembersInjector.class) {
+                ArrayList<ViewMembersInjector<?>> injectors = viewMembersInjectors.get(activityOrView);
+                if( injectors ==null ) {
+                    injectors = new ArrayList<ViewMembersInjector<?>>();
+                    viewMembersInjectors.put(activityOrView, injectors);
                 }
-            }
-            c = c.getSuperclass();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void requestStaticInjection(Class<?>... types) {
-        for (Class<?> c : types) {
-            while (c != null) {
-                for (Field field : c.getDeclaredFields()) {
-                    if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(InjectView.class)) {
-                        new ViewMembersInjector(field, contextProvider, field.getAnnotation(InjectView.class), scope).injectMembers(null);
-                    }
-                }
-                c = c.getSuperclass();
+                injectors.add(this);
             }
         }
 
-    }
-}
+        public void reallyInjectMembers(Object activityOrView) {
 
-class ViewMembersInjector<T> implements MembersInjector<T> {
-    protected Field field;
-    protected Provider<Context> contextProvider;
-    protected InjectView annotation;
-    protected ContextScope scope;
-    protected WeakReference<T> instanceRef;
+            Object value = activityOrView;
 
-    public ViewMembersInjector(Field field, Provider<Context> contextProvider, InjectView annotation, ContextScope scope) {
-        this.field = field;
-        this.annotation = annotation;
-        this.contextProvider = contextProvider;
-        this.scope = scope;
-    }
+            try {
+                final int[] viewIds = annotation.value();
+                
+                if( viewIds.length<1 )
+                    throw new NullPointerException(String.format("Cant inject view into %s.%s when view id is not specified", field.getDeclaringClass(), field.getName()));
 
-    public void injectMembers(T instance) {
-        // Mark instance for injection during setContentView
-        this.instanceRef = new WeakReference<T>(instance);
-        scope.registerViewForInjection(this);
-    }
+                for (int viewId : viewIds)
+                    value = value instanceof View ? ((View) value).findViewById(viewId) : ((Activity) value).findViewById(viewId);
 
-    public void reallyInjectMembers() {
+                if (value == activityOrView && Nullable.notNullable(field))
+                    throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));
 
-        final T instance = instanceRef.get();
-        if( instance ==null )
-            return;
+                field.setAccessible(true);
+                field.set(activityOrView, value);
 
-        Object value = null;
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
 
-        try {
-
-            value = ((Activity) contextProvider.get()).findViewById(annotation.value());
-
-            if (value == null && field.getAnnotation(Nullable.class) == null)
-                throw new NullPointerException(String.format("Can't inject null value into %s.%s when field is not @Nullable", field.getDeclaringClass(), field.getName()));
-
-            field.setAccessible(true);
-            field.set(instance, value);
-
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-
-        } catch (IllegalArgumentException f) {
-            throw new IllegalArgumentException(String.format("Can't assign %s value %s to %s field %s", value != null ? value.getClass() : "(null)", value,
-                    field.getType(), field.getName()));
+            } catch (IllegalArgumentException f) {
+                throw new IllegalArgumentException(String.format("Can't assign %s value %s to %s field %s", value != null ? value.getClass() : "(null)", value,
+                        field.getType(), field.getName()));
+            }
         }
+
+        protected static void injectViews(Object instance) {
+            synchronized ( ViewMembersInjector.class ) {
+                final ArrayList<ViewMembersInjector<?>> injectors = viewMembersInjectors.get(instance);
+                if(injectors!=null)
+                    for(ViewMembersInjector<?> viewMembersInjector : injectors)
+                        viewMembersInjector.reallyInjectMembers(instance);
+            }
+        }
+
+
+
+
     }
+
 }

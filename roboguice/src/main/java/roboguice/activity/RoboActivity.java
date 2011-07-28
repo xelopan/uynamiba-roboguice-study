@@ -15,18 +15,14 @@
  */
 package roboguice.activity;
 
+import roboguice.RoboGuice;
 import roboguice.activity.event.*;
-import roboguice.application.RoboApplication;
 import roboguice.event.EventManager;
-import roboguice.inject.ContextScope;
-import roboguice.inject.InjectorProvider;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 
 import com.google.inject.Injector;
 
@@ -55,70 +51,38 @@ import com.google.inject.Injector;
  * <br />
  * You can have access to the Guice {@link Injector} at any time, by calling
  * {@link #getInjector()}.<br />
- * However, you will not have access to Context scoped beans until
+ * However, you will not have access to ContextScoped scoped beans until
  * {@link #onCreate(Bundle)} is called. <br />
  * <br />
  * 
  * @author Mike Burton
  */
-public class RoboActivity extends Activity implements InjectorProvider {
+public class RoboActivity extends Activity {
     protected EventManager eventManager;
-    protected ContextScope scope;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Injector injector = getInjector();
+        final Injector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
-        scope = injector.getInstance(ContextScope.class);
-        scope.enter(this);
         injector.injectMembers(this);
         super.onCreate(savedInstanceState);
         eventManager.fire(new OnCreateEvent(savedInstanceState));
     }
 
     @Override
-    public void setContentView(int layoutResID) {
-        super.setContentView(layoutResID);
-        scope.injectViews();
-        eventManager.fire(new OnContentViewAvailableEvent());
-    }
-
-    @Override
-    public void setContentView(View view, LayoutParams params) {
-        super.setContentView(view, params);
-        scope.injectViews();
-        eventManager.fire(new OnContentViewAvailableEvent());
-    }
-
-    @Override
-    public void setContentView(View view) {
-        super.setContentView(view);
-        scope.injectViews();
-        eventManager.fire(new OnContentViewAvailableEvent());
-    }
-
-    @Override
-    public Object onRetainNonConfigurationInstance() {
-        return this;
-    }
-
-    @Override
     protected void onRestart() {
-        scope.enter(this);
         super.onRestart();
         eventManager.fire(new OnRestartEvent());
     }
 
     @Override
     protected void onStart() {
-        scope.enter(this);
         super.onStart();
         eventManager.fire(new OnStartEvent());
     }
 
     @Override
     protected void onResume() {
-        scope.enter(this);
         super.onResume();
         eventManager.fire(new OnResumeEvent());
     }
@@ -132,30 +96,23 @@ public class RoboActivity extends Activity implements InjectorProvider {
     @Override
     protected void onNewIntent( Intent intent ) {
         super.onNewIntent(intent);
-        scope.enter(this);
         eventManager.fire(new OnNewIntentEvent());
     }
 
     @Override
     protected void onStop() {
-        scope.enter(this);
         try {
             eventManager.fire(new OnStopEvent());
         } finally {
-            scope.exit(this);
             super.onStop();
         }
     }
 
     @Override
     protected void onDestroy() {
-        scope.enter(this);
         try {
             eventManager.fire(new OnDestroyEvent());
         } finally {
-            eventManager.clear(this);
-            scope.exit(this);
-            scope.dispose(this);
             super.onDestroy();
         }
     }
@@ -170,25 +127,13 @@ public class RoboActivity extends Activity implements InjectorProvider {
     @Override
     public void onContentChanged() {
         super.onContentChanged();
+        RoboGuice.getInjector(this).injectViewMembers(this);
         eventManager.fire(new OnContentChangedEvent());
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        scope.enter(this);
-        try {
-            eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
-        } finally {
-            scope.exit(this);
-        }
-    }
-
-    /**
-     * @see roboguice.application.RoboApplication#getInjector()
-     */
-    @Override
-    public Injector getInjector() {
-        return ((RoboApplication) getApplication()).getInjector();
+        eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
     }
 }
