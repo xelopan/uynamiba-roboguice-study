@@ -22,7 +22,7 @@ import roboguice.activity.event.*;
 import roboguice.event.EventManager;
 import roboguice.inject.ContentViewListener;
 import roboguice.inject.RoboInjector;
-import roboguice.util.RoboContext;
+import roboguice.util.ScopedObjectMapProvider;
 
 import android.accounts.AccountAuthenticatorActivity;
 import android.content.Intent;
@@ -41,7 +41,7 @@ import java.util.Map;
  *
  * @author Marcus Better
  */
-public class RoboAccountAuthenticatorActivity extends AccountAuthenticatorActivity implements RoboContext {
+public class RoboAccountAuthenticatorActivity extends AccountAuthenticatorActivity implements ScopedObjectMapProvider {
     protected EventManager eventManager;
     protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 

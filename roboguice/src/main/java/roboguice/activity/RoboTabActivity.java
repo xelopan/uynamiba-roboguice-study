@@ -20,7 +20,7 @@ import roboguice.activity.event.*;
 import roboguice.event.EventManager;
 import roboguice.inject.ContentViewListener;
 import roboguice.inject.RoboInjector;
-import roboguice.util.RoboContext;
+import roboguice.util.ScopedObjectMapProvider;
 
 import android.app.TabActivity;
 import android.content.Intent;
@@ -41,7 +41,7 @@ import java.util.Map;
  * 
  * @author Toly Pochkin
  */
-public class RoboTabActivity extends TabActivity implements RoboContext {
+public class RoboTabActivity extends TabActivity implements ScopedObjectMapProvider {
     protected EventManager eventManager;
     protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 
