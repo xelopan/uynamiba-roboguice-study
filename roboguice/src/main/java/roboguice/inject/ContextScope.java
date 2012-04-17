@@ -23,7 +23,6 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Stack;
 
@@ -49,7 +48,6 @@ import java.util.Stack;
  * @author Mike Burton
  */
 public class ContextScope implements Scope {
-    protected static LinkedHashSet<String> deadToMe = new LinkedHashSet<String>();
 
     protected HashMap<Context, Map<Key<?>, Object>> scopedObjects = new HashMap<Context, Map<Key<?>, Object>>();
     protected ThreadLocal<Stack<Context>> contextThreadLocal = new ThreadLocal<Stack<Context>>();
@@ -71,10 +69,8 @@ public class ContextScope implements Scope {
      */
     public void enter(Context context) {
 
-        // BUG synchronizing on ContextScope.class may be overly conservative (except we need it for deadToMe)
+        // BUG synchronizing on ContextScope.class may be overly conservative
         synchronized (ContextScope.class) {
-            if( deadToMe.contains(context.toString()) )
-                throw new IllegalStateException(String.format("Attempt to enter scope for %s after onDestroy has already been called",context));
 
             final Stack<Context> stack = getContextStack();
             final Map<Key<?>,Object> map = getOrCreateScopedObjectMap(context);
@@ -102,21 +98,6 @@ public class ContextScope implements Scope {
     }
 
     /**
-     * MUST be called when a context is created
-     * This is necessary because it appears that android sometimes re-uses instances of activities after onDestroy has been called.
-     * This causes the deadToMe check to fail, since deadToMe detects that we're opening a scope on a previously destroyed activity.
-     * To get around this, we clear this context from the deadToMe list onCreate.
-     * This is ugly because we have to do it statically, and thus make deadToMe static, because we can't get the ContextScope
-     * from the injector because doing so would open a new scope, but we have to clear this context before we enter the new scope.
-     * @param context
-     */
-    public static void onCreate(Context context) {
-        synchronized (ContextScope.class) {
-            deadToMe.remove(context.toString());
-        }
-    }
-
-    /**
      * MUST be called when a context is destroyed, otherwise will leak memory
      */
     public void onDestroy(Context context) {
@@ -124,13 +105,6 @@ public class ContextScope implements Scope {
             //noinspection StatementWithEmptyBody
             while(getContextStack().remove(context)) ;
             scopedObjects.remove(context).clear();
-
-            // Keep track of the last 20 contexts that we destroyed so we can throw
-            // an error in enter() if a user attempts to open a scope for one of these
-            // contexts after it's been destroyed
-            while( deadToMe.size()>20 )
-                deadToMe.remove(deadToMe.iterator().next());
-            deadToMe.add(context.toString());
         }
     }
 
