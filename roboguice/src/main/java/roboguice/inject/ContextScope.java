@@ -15,8 +15,12 @@
  */
 package roboguice.inject;
 
+import roboguice.util.Finalizer;
+import roboguice.util.Strings;
+
 import android.app.Application;
 import android.content.Context;
+import android.content.ContextWrapper;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
@@ -49,8 +53,9 @@ import java.util.Stack;
  */
 public class ContextScope implements Scope {
 
-    protected HashMap<Context, Map<Key<?>, Object>> scopedObjects = new HashMap<Context, Map<Key<?>, Object>>();
-    protected ThreadLocal<Stack<Context>> contextThreadLocal = new ThreadLocal<Stack<Context>>();
+    protected HashMap<String, Map<Key<?>, Object>> scopedObjects = new HashMap<String, Map<Key<?>, Object>>(); // Map contextId to values. We don't map the context itself due to http://stackoverflow.com/questions/10196502/how-to-associate-values-to-keys-without-blocking-gc/10196608
+    protected ThreadLocal<Stack<String>> contextThreadLocal = new ThreadLocal<Stack<String>>();
+    protected Finalizer finalizer = new Finalizer();
     protected Application application;
 
     public ContextScope(Application application) {
@@ -72,11 +77,21 @@ public class ContextScope implements Scope {
         // BUG synchronizing on ContextScope.class may be overly conservative
         synchronized (ContextScope.class) {
 
-            final Stack<Context> stack = getContextStack();
+            final Stack<String> stack = getContextStack();
             final Map<Key<?>,Object> map = getOrCreateScopedObjectMap(context);
 
+            finalizer.onFinalize(context,new Finalizer.Callback<Context>(){
+                @Override
+                public void call(Context context) {
+                    final String key = getKeyForContext(context);
+                    //noinspection StatementWithEmptyBody
+                    while( getContextStack().remove(key)) ;
+                    scopedObjects.remove(key).clear();
+                }
+            });
+
             // Mark this thread as for this context
-            stack.push(context);
+            stack.push(getKeyForContext(context));
 
             // Add the context to the scope for key Context, Activity, etc.
             Class<?> c = context.getClass();
@@ -84,37 +99,29 @@ public class ContextScope implements Scope {
                 map.put(Key.get(c), context);
                 c = c.getSuperclass();
             } while( c!=Object.class );
+
+
         }
 
     }
 
     public void exit(Context context) {
         synchronized (ContextScope.class) {
-            final Stack<Context> stack = getContextStack();
+            final Stack<String> stack = getContextStack();
 
-            if( stack.pop()!=context )
+            if( !Strings.equals(stack.pop(),getKeyForContext(context) ) )
                 throw new IllegalArgumentException(String.format("Scope for %s must be opened before it can be closed",context));
         }
     }
 
-    /**
-     * MUST be called when a context is destroyed, otherwise will leak memory
-     */
-    public void onDestroy(Context context) {
-        synchronized (ContextScope.class) {
-            //noinspection StatementWithEmptyBody
-            while(getContextStack().remove(context)) ;
-            scopedObjects.remove(context).clear();
-        }
-    }
 
 
     public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
         return new Provider<T>() {
             public T get() {
                 synchronized (ContextScope.class) {
-                    final Stack<Context> stack = getContextStack();
-                    final Context context = stack.peek();
+                    final Stack<String> stack = getContextStack();
+                    final String context = stack.peek();
                     final Map<Key<?>, Object> objectsForScope = scopedObjects.get(context);
                     if( objectsForScope==null )
                         return null;  // May want to consider throwing an exception here (if provider is used after onDestroy())
@@ -134,20 +141,31 @@ public class ContextScope implements Scope {
 
     protected Map<Key<?>, Object> getOrCreateScopedObjectMap(Context context) {
 
-        Map<Key<?>, Object> scopedObjects = this.scopedObjects.get(context);
+        Map<Key<?>, Object> scopedObjects = this.scopedObjects.get(getKeyForContext(context));
         if (scopedObjects == null) {
             scopedObjects = new HashMap<Key<?>, Object>();
-            this.scopedObjects.put(context, scopedObjects);
+            this.scopedObjects.put(getKeyForContext(context), scopedObjects);
         }
         return scopedObjects;
     }
 
-    public Stack<Context> getContextStack() {
-        Stack<Context> stack = contextThreadLocal.get();
+    protected String getKeyForContext( Context context ) {
+
+        Context c = context;
+        while( c instanceof ContextWrapper && ((ContextWrapper)c).getBaseContext()!=null )
+            c = ((ContextWrapper)c).getBaseContext();
+
+        return c.getClass().getName() + "@" + Integer.toHexString(c.hashCode()); // Don't use toString because it may have been overridden
+    }
+
+    protected Stack<String> getContextStack() {
+        Stack<String> stack = contextThreadLocal.get();
         if( stack==null ) {
-            stack = new Stack<Context>();
+            stack = new Stack<String>();
             contextThreadLocal.set(stack);
         }
         return stack;
     }
+
 }
+

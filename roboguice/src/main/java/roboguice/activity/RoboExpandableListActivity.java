@@ -19,7 +19,6 @@ import roboguice.RoboGuice;
 import roboguice.activity.event.*;
 import roboguice.event.EventManager;
 import roboguice.inject.ContentViewListener;
-import roboguice.inject.ContextScope;
 import roboguice.inject.RoboInjector;
 
 import android.app.ExpandableListActivity;
@@ -45,7 +44,6 @@ public class RoboExpandableListActivity extends ExpandableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ContextScope.onCreate(this);
         final RoboInjector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
         injector.injectMembersWithoutViews(this);
