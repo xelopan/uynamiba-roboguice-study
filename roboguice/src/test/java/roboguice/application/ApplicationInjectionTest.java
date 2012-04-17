@@ -4,8 +4,9 @@ import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import roboguice.RoboGuice;
-import roboguice.test.RobolectricRoboTestRunner;
+import roboguice.RobolectricRoboTestRunner;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.google.inject.Inject;
@@ -41,7 +42,7 @@ public class ApplicationInjectionTest {
 
 
 
-    public static class AppA extends RoboApplication {
+    public static class AppA extends Application {
         @Inject Random random;
 
         @Override
@@ -51,7 +52,7 @@ public class ApplicationInjectionTest {
         }
     }
 
-    public static class AppB extends RoboApplication {
+    public static class AppB extends Application {
         @Inject Context context;
 
         @Override

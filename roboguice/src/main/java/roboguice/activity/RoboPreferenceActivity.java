@@ -22,7 +22,6 @@ import roboguice.inject.ContentViewListener;
 import roboguice.inject.ContextScope;
 import roboguice.inject.PreferenceListener;
 import roboguice.inject.RoboInjector;
-import roboguice.util.ScopedObjectMapProvider;
 
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -31,10 +30,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 
 import com.google.inject.Inject;
-import com.google.inject.Key;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A {@link RoboPreferenceActivity} extends from {@link PreferenceActivity} to provide
@@ -49,17 +44,16 @@ import java.util.Map;
  * @author Rodrigo Damazio
  * @author Mike Burton
  */
-public abstract class RoboPreferenceActivity extends PreferenceActivity implements ScopedObjectMapProvider{
+public abstract class RoboPreferenceActivity extends PreferenceActivity {
     protected EventManager eventManager;
     protected PreferenceListener preferenceListener;
-    protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
-
 
     @Inject ContentViewListener ignored; // BUG find a better place to put this
 
     /** {@inheritDoc } */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ContextScope.onCreate(this);
         final RoboInjector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
         preferenceListener = injector.getInstance(PreferenceListener.class);
@@ -154,10 +148,4 @@ public abstract class RoboPreferenceActivity extends PreferenceActivity implemen
         super.onActivityResult(requestCode, resultCode, data);
         eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
     }
-
-    @Override
-    public Map<Key<?>, Object> getScopedObjectMap() {
-        return scopedObjects;
-    }
-
 }

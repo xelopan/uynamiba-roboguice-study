@@ -19,8 +19,8 @@ import roboguice.RoboGuice;
 import roboguice.activity.event.*;
 import roboguice.event.EventManager;
 import roboguice.inject.ContentViewListener;
+import roboguice.inject.ContextScope;
 import roboguice.inject.RoboInjector;
-import roboguice.util.ScopedObjectMapProvider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -29,10 +29,6 @@ import android.os.Bundle;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A {@link RoboActivity} extends from {@link Activity} to provide dynamic
@@ -65,14 +61,14 @@ import java.util.Map;
  * 
  * @author Mike Burton
  */
-public class RoboActivity extends Activity implements ScopedObjectMapProvider {
+public class RoboActivity extends Activity {
     protected EventManager eventManager;
-    protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 
     @Inject ContentViewListener ignored; // BUG find a better place to put this
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ContextScope.onCreate(this);
         final RoboInjector injector = RoboGuice.getInjector(this);
         eventManager = injector.getInstance(EventManager.class);
         injector.injectMembersWithoutViews(this);
@@ -150,10 +146,5 @@ public class RoboActivity extends Activity implements ScopedObjectMapProvider {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         eventManager.fire(new OnActivityResultEvent(requestCode, resultCode, data));
-    }
-
-    @Override
-    public Map<Key<?>, Object> getScopedObjectMap() {
-        return scopedObjects;
     }
 }

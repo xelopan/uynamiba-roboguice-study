@@ -4,8 +4,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import roboguice.activity.RoboActivity;
-import roboguice.test.RobolectricRoboTestRunner;
 
 import android.app.Activity;
 
@@ -22,7 +20,7 @@ public class RoboGuiceTest {
     
     @Test
     public void destroyInjectorShouldRemoveContext() {
-        final Activity activity = new RoboActivity();
+        final Activity activity = new Activity();
         RoboGuice.getInjector(activity);
         
         assertThat(RoboGuice.injectors.size(), equalTo(1));
@@ -36,7 +34,7 @@ public class RoboGuiceTest {
 
     @Test
     public void resetShouldRemoveContext() {
-        final Activity activity = new RoboActivity();
+        final Activity activity = new Activity();
         RoboGuice.getInjector(activity);
         
         assertThat(RoboGuice.injectors.size(), equalTo(1));

@@ -1,11 +1,12 @@
 package org.roboguice.astroboy.controller;
 
+import com.xtremelabs.robolectric.RobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.roboguice.astroboy.controller.Astroboy;
 import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
-import roboguice.test.RobolectricRoboTestRunner;
 
+import android.app.Activity;
 import android.content.Context;
 
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -18,10 +19,10 @@ import static org.junit.Assert.assertThat;
  * so we don't bother initializing the activity or really doing anything with it
  * at all.
  */
-@RunWith(RobolectricRoboTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class Astroboy1Test {
     
-    protected Context context = new RoboActivity();
+    protected Context context = new Activity();
     protected Astroboy astroboy = RoboGuice.getInjector(context).getInstance(Astroboy.class);
     
     @Test

@@ -1,4 +1,4 @@
-package roboguice.test.shadow;
+package roboguice.shadow;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
