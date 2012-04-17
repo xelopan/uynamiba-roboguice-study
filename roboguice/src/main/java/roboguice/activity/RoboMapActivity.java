@@ -20,7 +20,7 @@ import roboguice.activity.event.*;
 import roboguice.event.EventManager;
 import roboguice.inject.ContentViewListener;
 import roboguice.inject.RoboInjector;
-import roboguice.util.RoboContext;
+import roboguice.util.ScopedObjectMapProvider;
 
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -41,7 +41,7 @@ import java.util.Map;
  * 
  * @author Mike Burton
  */
-public abstract class RoboMapActivity extends MapActivity implements RoboContext {
+public abstract class RoboMapActivity extends MapActivity implements ScopedObjectMapProvider {
     protected EventManager eventManager;
     protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 

@@ -4,6 +4,6 @@ import com.google.inject.Key;
 
 import java.util.Map;
 
-public interface RoboContext {
+public interface ScopedObjectMapProvider {
     Map<Key<?>,Object> getScopedObjectMap();
 }

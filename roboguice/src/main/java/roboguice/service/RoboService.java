@@ -16,7 +16,7 @@ import roboguice.service.event.OnConfigurationChangedEvent;
 import roboguice.service.event.OnCreateEvent;
 import roboguice.service.event.OnDestroyEvent;
 import roboguice.service.event.OnStartEvent;
-import roboguice.util.RoboContext;
+import roboguice.util.ScopedObjectMapProvider;
 
 import android.app.Service;
 import android.content.Intent;
@@ -51,7 +51,7 @@ import java.util.Map;
  * @author Mike Burton
  * @author Christine Karman
  */
-public abstract class RoboService extends Service implements RoboContext {
+public abstract class RoboService extends Service implements ScopedObjectMapProvider {
 
     protected EventManager eventManager;
     protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();

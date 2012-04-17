@@ -1,6 +1,6 @@
 package roboguice.application;
 
-import roboguice.util.RoboContext;
+import roboguice.util.ScopedObjectMapProvider;
 
 import android.app.Application;
 
@@ -9,7 +9,7 @@ import com.google.inject.Key;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RoboApplication extends Application implements RoboContext {
+public class RoboApplication extends Application implements ScopedObjectMapProvider {
     protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 
     @Override
